@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>form</title>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <h3>发送邮件</h3>
+            <hr/>
+            <form role="form" action="/dome/send" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label >发送到(To)：</label>
+                    <input type="text" class="form-control" name="to"/>
+                </div>
+                <div class="form-group">
+                    <label >邮件主题（Subject）：</label>
+                    <input type="text" class="form-control" name="subject"  />
+                </div>
+                <div class="form-group">
+                    <label>邮件内容（Text）：</label>
+                    <textarea type="text" class="form-control" name="text" ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputFile">上传附件</label>
+                    <input type="file" id="exampleInputFile" name="multipartFile" />
+                    <p class="help-block">
+                        Example block-level help text here.
+                    </p>
+                </div>
+                <button type="submit" class="btn btn-default">发送</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
