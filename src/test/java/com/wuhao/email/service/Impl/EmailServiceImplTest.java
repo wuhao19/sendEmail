@@ -45,8 +45,8 @@ public class EmailServiceImplTest {
         message.setTo("928707094@qq.com");
         message.setSubject("你好！");
         message.setText("232323");
-        message.setFilePath("E:\\workplace\\J2EE\\email\\src\\main\\resources\\static\\2323.jpg");
-        message.setFileName("2323.jpg");
+        message.setFilePath("E:\\workplace\\J2EE\\email\\QQ浏览器截图20180718201358.png");
+        message.setFileName("232大海3.png");
         emailService.sendEnclosureFormEmail(message);
     }
     @Test

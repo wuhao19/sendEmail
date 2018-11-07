@@ -1,7 +1,6 @@
 package com.wuhao.email.form;
 
 import lombok.Data;
-
 @Data
 public class Message {
     private String to;

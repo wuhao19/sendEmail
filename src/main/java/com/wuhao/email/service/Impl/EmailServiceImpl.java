@@ -58,6 +58,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendEnclosureFormEmail(EmailMessage emailMessage) {
         MimeMessage message = javaMailSender.createMimeMessage();
+        System.setProperty("mail.mime.splitlongparameters","false");
         try {
             String fileName = emailMessage.getFileName();
             String filePath = emailMessage.getFilePath();

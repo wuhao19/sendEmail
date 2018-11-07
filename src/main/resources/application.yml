@@ -4,3 +4,12 @@ spring:
     username: 928707094@qq.com
     password: fswrykjilaqkbbje
     default-encoding: utf-8
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML5
+    encoding: UTF-8
+    cache: false
+
+

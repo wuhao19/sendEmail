@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>error</title>
+</head>
+<body>
+<h3>操作成功！将在3秒后自动跳转！</h3>
+<h5>信息码：<p th:text="${code}"></p>;信息：<p style="color:red;" th:text="${message}"></p></h5>
+<a href="#" th:href="${url}">点击跳转</a>
+</body>
+</html>
