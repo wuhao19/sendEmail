@@ -4,9 +4,6 @@ import com.wuhao.email.domain.User;
 import com.wuhao.email.service.UserService;
 import org.springframework.stereotype.Service;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.servlet.http.HttpSession;
-
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,8 +36,9 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public User findUserByEmail(String userEmail, HttpSession session) {
-        User user = (User) session.getAttribute("user");
+    public User findUserByEmail(String userEmail) {
+        User user = new User();
+        user.setUserName("wuhao");
         return user;
     }
     /**
@@ -48,10 +46,7 @@ public class UserServiceImpl implements UserService {
      * @param user
      */
     @Override
-    public void updateUser(User user, HttpSession session) {
-        User result = (User) session.getAttribute("user");
-        result.setUserEmailVerify(0);
-        session.setAttribute("user",result);
+    public void updateUser(User user) {
     }
 
 

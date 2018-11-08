@@ -2,9 +2,6 @@ package com.wuhao.email.service;
 
 import com.wuhao.email.domain.User;
 
-import javax.servlet.http.HttpSession;
-import java.util.List;
-
 public interface UserService {
 
     /***
@@ -27,13 +24,13 @@ public interface UserService {
      * @param userEmail
      * @return
      */
-    User findUserByEmail(String userEmail, HttpSession session);
+    User findUserByEmail(String userEmail);
 
     /**
      * 更新用户的邮箱验证状态
      * @param user
      */
-    void updateUser(User user,HttpSession session);
+    void updateUser(User user);
 
 
 }

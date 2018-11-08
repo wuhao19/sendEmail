@@ -15,3 +15,6 @@ spring:
 #云之讯短信配置文件
 is_test: true
 rest_server: open.ucpaas.com
+
+#邮箱验证的实效时间
+emailVerifyTimeOut: 5000

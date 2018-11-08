@@ -1,7 +1,6 @@
 package com.wuhao.email.controller;
 
 import com.wuhao.email.domain.EmailMessage;
-import com.wuhao.email.domain.LoginMode;
 import com.wuhao.email.domain.RegisterMode;
 import com.wuhao.email.domain.User;
 import com.wuhao.email.service.EmailService;
@@ -26,6 +25,8 @@ public class UserRegisterController {
     private UserService userService;
     @Autowired
     private EmailService emailService;
+
+    EmailMessage emailMessage=null;
 
     @GetMapping("/")
     public String register(){
@@ -64,36 +65,26 @@ public class UserRegisterController {
         model.addAttribute("phoneVerify",registerUser.getUserPhoneVerify());
         return "index";
     }
-
-    @ResponseBody
-    @PostMapping("/sendEmail")
-    public LoginMode  sendEmailVerifyLink(HttpServletRequest request){
-        HttpSession session = request.getSession();
-        User  user =(User) session.getAttribute("user");
-        System.out.println("=========================>"+user.getUserName());
-       return  new LoginMode();
-    }
-
-
     /**
      * 用主页进行邮箱验证
-     * @param userName
-     * @param userEmail
+     * @param request
      * @return
      */
-    @GetMapping("/verifyEmail/{userName},{userEmail}")
-    public String verifyEmail(@PathVariable("userName")String userName,
-                              @PathVariable("userEmail")String userEmail){
-        EmailMessage emailMessage = new EmailMessage();
+    @ResponseBody
+    @PostMapping("/sendEmail")
+    public void   sendEmailVerifyLink(HttpServletRequest request){
+        HttpSession session = request.getSession();
+        User  user =(User) session.getAttribute("user");
+        emailMessage = new EmailMessage();
         emailMessage.setForm("928707094@qq.com");
-        emailMessage.setTo(userEmail);
+        emailMessage.setTo(user.getUserEmail());
         emailMessage.setSubject("邮箱认证");
-        emailMessage.setText("这是一封验证邮件," +
-                "恭喜您注册成功，请点击下面的连接进行激活账户:" +
-                "http://127.0.0.1:8080/register/doVerifyEmail?userName="+userName+"&userEmail="+userEmail);
+        String emailText ="这是一封验证邮件,恭喜您注册成功，请点击下面的连接进行激活账户: http://127.0.0.1:8080/register/doVerifyEmail?userName="+user.getUserName()+"&userEmail="+user.getUserEmail();
+        System.out.println(emailText);
+        emailMessage.setText(emailText);
         emailService.sendHtmlEmail(emailMessage);
-        return "index";
     }
+
 
     /**
      * 用户邮箱验证链接进行核实
@@ -101,23 +92,23 @@ public class UserRegisterController {
      * @param userEmail
      * @return
      */
-    @GetMapping("/doVerifyEmail/{userName},{userEmail}")
-    public ModelAndView doVerifyEmail(@PathVariable("userName") String userName, @PathVariable String userEmail,
-                                      Map<String,Object> map,
-                                      HttpSession session
+    @GetMapping("/doVerifyEmail")
+    public ModelAndView doVerifyEmail(@RequestParam("userName") String userName,@RequestParam("userEmail") String userEmail,
+                                      Map<String,Object> map
                                       ){
         if (StringUtils.isBlank(userName) || StringUtils.isBlank(userEmail)){
             map.put("message","用户或者邮箱不能为空");
             return new ModelAndView("common/error",map);
         }
         //调动UserService 查询是否用户
-        User user=userService.findUserByEmail(userEmail,session);
-        if(null==user || user.getUserName()!=userName ){
+        User user=userService.findUserByEmail(userEmail);
+        if(null==user || !user.getUserName().equals(userName) ){
             map.put("message","验证失败！该用户不存在。");
             return new ModelAndView("common/error",map);
         }
         user.setUserEmailVerify(0);
-        userService.updateUser(user,session);
-        return new ModelAndView("index");
+        userService.updateUser(user);
+        map.put("message","邮箱验证成功");
+        return new ModelAndView("common/success",map);
     }
 }

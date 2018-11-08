@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>login</title>
     <link href="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/jquery-3.3.1.min.js" ></script>
 </head>
 <body>
 <div class="container">
@@ -15,8 +16,7 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">用户名：</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control"  th:value="${user.getUserName()}"  placeholder="输入6位用户名已小写字母开头" name="userName"/>
-                        <!--<h5 style="margin-top: 20px;letter-spacing: 2px;color: darkred;" th:if="${message != null}">*<span  th:text="${message}"/></h5>-->
+                        <input type="text" class="form-control"  placeholder="输入6位用户名已小写字母开头" name="userName"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -34,7 +34,7 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">邮箱：</label>
                     <div class="col-sm-10">
-                        <input type="email" class="form-control" th:value="${user.userEmail}"  placeholder="邮箱" name="userEmail"/>
+                        <input type="email" class="form-control" placeholder="邮箱" name="userEmail"/>
                     </div>
                 </div>
                 <div class="form-group">
