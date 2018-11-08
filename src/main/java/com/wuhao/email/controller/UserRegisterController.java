@@ -28,6 +28,8 @@ public class UserRegisterController {
 
     EmailMessage emailMessage=null;
 
+    String verifySmsCode=null;
+
     @GetMapping("/")
     public String register(){
 //        return new ModelAndView("register/register");
@@ -50,7 +52,7 @@ public class UserRegisterController {
                            ){
 
         //验证传值的真实性以及手机验证
-        RegisterMode registerMode = RegisterAssUtil.verifyRegisterInfo(user, verifyCode);
+        RegisterMode registerMode = RegisterAssUtil.verifyRegisterInfo(user,verifyCode,verifySmsCode);
         if (registerMode==null||registerMode.getCode()!=0){
             model.addAttribute("message",registerMode.getMessage());
             model.addAttribute(user);
@@ -65,6 +67,24 @@ public class UserRegisterController {
         model.addAttribute("phoneVerify",registerUser.getUserPhoneVerify());
         return "index";
     }
+
+    /**
+     * 注册时用户获取验证码
+     * @param phone
+     * @param
+     */
+    @ResponseBody
+    @PostMapping("/sendPhone")
+    public RegisterMode sendPhone(@RequestParam("phone") String phone){
+        //生产6位验证码
+        verifySmsCode = RegisterAssUtil.getVerifySmsCode();
+        String verifyCode = RegisterAssUtil.getVerifyCode(phone, verifySmsCode);
+        if (verifyCode==null){
+            return new RegisterMode("获取验证码失败");
+        }
+        return new RegisterMode();
+    }
+
     /**
      * 用主页进行邮箱验证
      * @param request

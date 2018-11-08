@@ -10,7 +10,6 @@ public class RegisterAssUtilTest {
 
     @Test
     public void getVerifyCode() {
-        String verifyCode = RegisterAssUtil.getVerifyCode("17723938580");
-        System.out.println(verifyCode);
+
     }
 }

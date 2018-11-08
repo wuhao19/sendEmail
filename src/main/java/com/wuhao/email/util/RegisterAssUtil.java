@@ -19,7 +19,7 @@ public class RegisterAssUtil {
      * @param verifyCode
      * @return
      */
-    public static RegisterMode verifyRegisterInfo(User user,String verifyCode) {
+    public static RegisterMode verifyRegisterInfo(User user,String verifyCode,String verifySmsCode) {
         RegisterMode registerMode = null;
         if(StringUtils.isEmpty(user.getUserName()) || user.getUserName().length()>=MAX_VALUE){
             return new RegisterMode("用户名不能为空或者输入格式有误");
@@ -32,15 +32,18 @@ public class RegisterAssUtil {
         }else if(StringUtils.isEmpty(verifyCode) || verifyCode.length()!=6){
             return new RegisterMode("用户的手机验证码不能为空或者格式不正确");
         }else {
-//            //进行手机验证码验证
-//            String resultVerifyCode = getVerifyCode(user.getUserPhone());
-//            if (StringUtils.isBlank(resultVerifyCode)|| !resultVerifyCode.equals(verifyCode)){
-//                return new RegisterMode("你输入的验证码不对，请重新输入");
-//            }
+            //进行手机验证码验证
+            if ( !verifySmsCode.equals(verifyCode)){
+                return new RegisterMode("你输入的验证码不对，请重新输入");
+            }
             return registerMode = new RegisterMode();
         }
     }
 
+    /**
+     * 生产6位数随机验证码
+     * @return
+     */
     public static String getVerifySmsCode(){
         Random random = new Random();
         StringBuffer sb = new StringBuffer();
@@ -54,12 +57,14 @@ public class RegisterAssUtil {
      * 发送验证码
      * @param userPhone
      */
-    public static String getVerifyCode(String userPhone){
-        String verifySmsCode = RegisterAssUtil.getVerifySmsCode();
+    public static String getVerifyCode(String userPhone,String verifySmsCode){
         //获取短信发送的对象
         YUNSMS yunsms = new YUNSMS();
-        yunsms.sendSms(userPhone,verifySmsCode);
-        return verifySmsCode;
+        String s = yunsms.sendSms(userPhone, verifySmsCode);
+        if(StringUtils.isBlank(s)){
+            return null;
+        }
+        return s;
     }
 
 }
