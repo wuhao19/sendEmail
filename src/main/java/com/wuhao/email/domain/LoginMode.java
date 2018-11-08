@@ -4,10 +4,8 @@ import lombok.Data;
 
 @Data
 public class LoginMode {
-
     public static final int SUCCESS=0;
     public static final int ERROR=-1;
-
     public static final int LOGIN_TYPE_ACCESS=0;
     public static final int LOGIN_TYPE_EMAIL=1;
     public static final int LOGIN_TYPE_PHONE=2;
@@ -28,8 +26,8 @@ public class LoginMode {
 
 
     public  LoginMode(){
-        this.code =SUCCESS;
-        this.message ="";
+        this.code = SUCCESS;
+        this.message = "";
     }
 
     public  LoginMode(int loginType){

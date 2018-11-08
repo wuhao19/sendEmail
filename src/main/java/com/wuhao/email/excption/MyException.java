@@ -3,9 +3,9 @@ package com.wuhao.email.excption;
 
 import com.wuhao.email.Enum.EmailCode;
 
-public class MyExcption extends RuntimeException{
+public class MyException extends RuntimeException{
     private Integer code;
-    public MyExcption(EmailCode emailCode){
+    public MyException(EmailCode emailCode){
         super(emailCode.getMessage());
         this.code=emailCode.getCode();
     }

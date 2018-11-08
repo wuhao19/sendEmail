@@ -12,4 +12,6 @@ spring:
     encoding: UTF-8
     cache: false
 
-
+#云之讯短信配置文件
+is_test: true
+rest_server: open.ucpaas.com

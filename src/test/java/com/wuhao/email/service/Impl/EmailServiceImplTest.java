@@ -32,11 +32,9 @@ public class EmailServiceImplTest {
         message.setForm("928707094@qq.com");
         message.setTo("928707094@qq.com");
         message.setSubject("你好！");
-        message.setText("<html> <br/>" +
-                "<body><br/>" +
-                "<a href='www.baidu.com'>www.baidu.com</a><br/>" +
-                "</body><br/>" +
-                "</html>");
+        message.setText("这是一封验证邮件：" +
+                "http://127.0.0.1:8080/login/login"
+                );
         emailService.sendHtmlEmail(message);
     }
     @Test

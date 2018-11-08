@@ -9,7 +9,7 @@
 <div class="container">
     <div class="row clearfix">
         <div class="col-md-12 column">
-            <h3  th:object="${session.user}"> <span th:text="*{userName}"/>发送邮件</h3>
+            <h3  th:object="${session.user}"> <span th:text="*{getUserName()}"/>发送邮件</h3>
             <hr/>
             <form role="form" action="/dome/send" method="post" enctype="multipart/form-data">
                 <div class="form-group">

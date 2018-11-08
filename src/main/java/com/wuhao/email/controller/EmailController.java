@@ -1,7 +1,6 @@
 package com.wuhao.email.controller;
 import com.wuhao.email.Enum.EmailCode;
 import com.wuhao.email.domain.EmailMessage;
-import com.wuhao.email.excption.MyExcption;
 import com.wuhao.email.form.Message;
 import com.wuhao.email.service.EmailService;
 import com.wuhao.email.util.EmailUtil;
@@ -17,10 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.mail.internet.MimeUtility;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.*;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/dome")
