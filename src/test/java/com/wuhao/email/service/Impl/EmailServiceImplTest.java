@@ -6,12 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.io.File;
-
-import static org.junit.Assert.*;
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -43,7 +38,7 @@ public class EmailServiceImplTest {
         message.setTo("928707094@qq.com");
         message.setSubject("你好！");
         message.setText("232323");
-        message.setFilePath("E:\\workplace\\J2EE\\email\\QQ浏览器截图20180718201358.png");
+        message.setFilePath("");
         message.setFileName("232大海3.png");
         emailService.sendEnclosureFormEmail(message);
     }

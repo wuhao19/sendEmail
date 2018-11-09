@@ -11,6 +11,14 @@ spring:
     mode: HTML5
     encoding: UTF-8
     cache: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/email?serverTimezone=GMT%2B8
+    username: root
+    password: password
+
+
+
 
 #云之讯短信配置文件
 is_test: true
@@ -18,3 +26,10 @@ rest_server: open.ucpaas.com
 
 #邮箱验证的实效时间
 emailVerifyTimeOut: 5000
+
+#配置.xml文件路径,配置模型路径
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.wuhao.email.model
+  configuration:
+    map-underscore-to-camel-case: false
