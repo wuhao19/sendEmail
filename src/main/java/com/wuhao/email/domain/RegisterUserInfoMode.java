@@ -2,16 +2,22 @@ package com.wuhao.email.domain;
 
 import lombok.Data;
 
+/**
+ * 用户注册的信息刷
+ */
 @Data
-public class User {
-    private Integer userId;
+public class RegisterUserInfoMode {
+
     private String userName;
+
     private String userPassword;
 
     private String userEmail;
+
     private String userPhone;
 
-    private String userImg;
+    private String phoneCode;
+
     /**
      * 用户的手机验证  0为已经验证 1为未验证 默认为0
      */

@@ -1,12 +1,11 @@
 package com.wuhao.email.controller;
 
-import com.wuhao.email.domain.EmailMessage;
-import com.wuhao.email.domain.RegisterMode;
-import com.wuhao.email.domain.User;
+import com.wuhao.email.domain.*;
 import com.wuhao.email.service.EmailService;
 import com.wuhao.email.service.UserService;
 import com.wuhao.email.util.RegisterAssUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +20,12 @@ import java.util.Map;
 @Controller
 @RequestMapping("/register")
 public class UserRegisterController {
+
+    private static final String PHONE_KEY="PHONE_KEY";
+//    public static final String EX_EMAIL = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$";
+    public static final String EX_PHONE = "^[1][34578]\\d{9}$";
+    public static final int MAX_VALUE=128;
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -28,45 +33,149 @@ public class UserRegisterController {
 
     EmailMessage emailMessage=null;
 
-    String verifySmsCode=null;
+
 
     @GetMapping("/")
-    public String register(){
-//        return new ModelAndView("register/register");
+    public String register(Model model){
+        RegisterUserInfoMode registerUserInfoMode = new RegisterUserInfoMode();
+        model.addAttribute("user",registerUserInfoMode);
         return "register/register";
     }
 
     /**
-     * 用户注册
-     * @param user
-     * @param verifyCode
-     * @param model
-     * @param request
+     * 注册用户提交的信息页面
+     * @param userInfoMode 获取用户输入信息
+     * @param model 返换用户的对象
+     * @param request request请求
      * @return
      */
-    @PostMapping("/doRegister")
-    public String doRegister(@Valid User user,
-                             @RequestParam("verifyCode") String verifyCode,
-                             Model model,
-                             HttpServletRequest request
-                           ){
-
-        //验证传值的真实性以及手机验证
-        RegisterMode registerMode = RegisterAssUtil.verifyRegisterInfo(user,verifyCode,verifySmsCode);
-        if (registerMode==null||registerMode.getCode()!=0){
+    @RequestMapping("/doRegister")
+    public String  doRegister(@Valid RegisterUserInfoMode userInfoMode, Model model, HttpServletRequest request){
+        RegisterMode registerMode = checkUserInfo(userInfoMode);
+        String returnPath = checkResultIsNull(registerMode,userInfoMode);
+        if(returnPath!=null){
             model.addAttribute("message",registerMode.getMessage());
-            model.addAttribute(user);
+            model.addAttribute("user",userInfoMode);
             return "register/register";
         }
-        //调用service保存数据库
-        User registerUser = userService.register(user);
+        //TODO 检查用户数据
+        RegisterMode checkRegisterUserInfo = checkRegisterUserInfo(userInfoMode);
+        if(checkRegisterUserInfo==null || checkRegisterUserInfo.getCode()!=0){
+            model.addAttribute("message",checkRegisterUserInfo.getMessage());
+            model.addAttribute("user",userInfoMode);
+            return "register/register";
+        }
+        //获取手机验证码
         HttpSession session = request.getSession();
-        //返回用户注册成功后的页面
-        session.setAttribute("user",registerUser);
-        model.addAttribute("emailVerify",registerUser.getUserEmailVerify());
-        model.addAttribute("phoneVerify",registerUser.getUserPhoneVerify());
+        String systemVerifyCode = (String)session.getAttribute(PHONE_KEY);
+        //检查用户的验证码
+        RegisterMode checkPhoneVerifyCode = checkPhoneVerifyCode(systemVerifyCode, userInfoMode.getPhoneCode());
+        returnPath = checkResultIsNull(checkPhoneVerifyCode,userInfoMode);
+        if(returnPath!=null){
+            model.addAttribute("message",checkPhoneVerifyCode.getMessage());
+            model.addAttribute("user",userInfoMode);
+            return returnPath;
+        }
+        //验证成功
+        //TODO Service保存用户信息
+        RegisterUserInfoMode registerUserInfoMode = new RegisterUserInfoMode();
+        BeanUtils.copyProperties(userInfoMode,registerUserInfoMode);
+        System.out.println(registerUserInfoMode);
+        // 清除Session 手机验证码
+//        session.removeAttribute(PHONE_KEY);
+        session.setAttribute("user",registerUserInfoMode);
         return "index";
     }
+
+
+    /**
+     * 检查注册时返回的Register是否为空
+     * @param registerMode 检查的对象
+     * @param userInfoMode 用户信息
+     * @return 返回路径
+     */
+    private String checkResultIsNull(RegisterMode registerMode,RegisterUserInfoMode userInfoMode){
+        if (registerMode==null || registerMode.getCode()!=0){
+            if(userInfoMode==null){userInfoMode = new RegisterUserInfoMode();}
+            return "register/register";
+        }
+        return null;
+    }
+
+    /**
+     * 检查用户信息是否为空
+     * @param userInfoMode 传值的用户信息
+     * @return 验证错误信息对象
+     */
+    private RegisterMode checkUserInfo(RegisterUserInfoMode userInfoMode){
+        RegisterMode registerMode = null;
+        if (checkUserInfoIsNull(userInfoMode)==null){
+            return registerMode = new RegisterMode("用户信息不能为空");
+        }
+       return registerMode = new RegisterMode();
+}
+    private RegisterUserInfoMode checkUserInfoIsNull(RegisterUserInfoMode userInfoMode){
+        if(StringUtils.isBlank(userInfoMode.getUserName())&&StringUtils.isBlank(userInfoMode.getUserPassword())&&StringUtils.isBlank(userInfoMode.getUserPhone())&&StringUtils.isBlank(userInfoMode.getPhoneCode())&&StringUtils.isBlank(userInfoMode.getUserEmail())){
+            return null;
+        }
+        return userInfoMode;
+    }
+
+    /**
+     * 检查用户的手机验证码是否正确
+     * @param systemPhoneVerifyCode 系统验证码
+     * @param userPhoneVerifyCode 用户输入的验证码
+     * @return 验证错误信息对象
+     */
+    private RegisterMode checkPhoneVerifyCode(String systemPhoneVerifyCode,String userPhoneVerifyCode){
+        RegisterMode registerMode = null;
+//        if (StringUtils.isBlank(systemPhoneVerifyCode) || StringUtils.isBlank(userPhoneVerifyCode)){
+//            return new RegisterMode("用户验证码或者系统验证码为空");
+//        }
+//        if (!systemPhoneVerifyCode.equals(userPhoneVerifyCode)){
+//            return new RegisterMode("用户输入了错误的验证码");
+//        }
+        return registerMode = new RegisterMode();
+    }
+
+    /**
+     * 检查注册用户的数据合法性
+     * @param registerUserInfoMode 用户数据
+     * @return 验证错误信息对象
+     */
+    private RegisterMode checkRegisterUserInfo(RegisterUserInfoMode registerUserInfoMode){
+        RegisterMode registerMode = null;
+        if(StringUtils.isEmpty(registerUserInfoMode.getUserName()) || registerUserInfoMode.getUserName().length()>=MAX_VALUE){
+            return new RegisterMode("用户名不能为空或者输入格式有误");
+        }else if(StringUtils.isEmpty(registerUserInfoMode.getUserPassword())||registerUserInfoMode.getUserPassword().length()>=MAX_VALUE){
+            return new RegisterMode("用户的密码不能为空或者输入的密码格式有误");
+        }else if (StringUtils.isEmpty(registerUserInfoMode.getUserEmail()) || registerUserInfoMode.getUserEmail().length()>=MAX_VALUE){
+            return new RegisterMode("用户的Email不能为空或者输入的格式有误");
+        }else if((StringUtils.isEmpty(registerUserInfoMode.getUserPhone()) || !registerUserInfoMode.getUserPhone().matches(EX_PHONE)) || registerUserInfoMode.getUserPhone().length()>=MAX_VALUE){
+            return new RegisterMode("用户的手机号不能为空或者手机号输入错误");
+        }else if(StringUtils.isBlank(registerUserInfoMode.getPhoneCode())|| registerUserInfoMode.getPhoneCode().length() != 6){
+            return new RegisterMode("用户输入的验证码格式不正确");
+        }
+            else {
+            return registerMode = new RegisterMode();
+        }
+    }
+
+    /**
+     * 注册失败
+     * @param registerUserInfoMode 用户的注册信息
+     * @param model 返回前段的model对象
+     * @return 页面路径
+     */
+    private  String  failRegister(RegisterUserInfoMode registerUserInfoMode,Model model){
+        if(registerUserInfoMode ==null){
+            registerUserInfoMode =new RegisterUserInfoMode();
+        }
+        model.addAttribute("user",registerUserInfoMode);
+        return  "register/register";
+    }
+
+
 
     /**
      * 注册时用户获取验证码
@@ -75,13 +184,15 @@ public class UserRegisterController {
      */
     @ResponseBody
     @PostMapping("/sendPhone")
-    public RegisterMode sendPhone(@RequestParam("phone") String phone){
+    public RegisterMode sendPhone(@RequestParam("phone") String phone,HttpServletRequest request){
         //生产6位验证码
-        verifySmsCode = RegisterAssUtil.getVerifySmsCode();
-        String verifyCode = RegisterAssUtil.getVerifyCode(phone, verifySmsCode);
+        String systemVerifyCode = RegisterAssUtil.getVerifySmsCode();
+        String verifyCode = RegisterAssUtil.getVerifyCode(phone, systemVerifyCode);
         if (verifyCode==null){
             return new RegisterMode("获取验证码失败");
         }
+        HttpSession session = request.getSession();
+        session.setAttribute(PHONE_KEY,systemVerifyCode);
         return new RegisterMode();
     }
 
@@ -112,7 +223,7 @@ public class UserRegisterController {
      * @param userEmail
      * @return
      */
-    @GetMapping("/doVerifyEmail")
+    @PostMapping("/doVerifyEmail")
     public ModelAndView doVerifyEmail(@RequestParam("userName") String userName,@RequestParam("userEmail") String userEmail,
                                       Map<String,Object> map
                                       ){
