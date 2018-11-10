@@ -1,8 +1,10 @@
 package com.wuhao.email.service.Impl;
 import com.wuhao.email.domain.EmailMessage;
 import com.wuhao.email.service.EmailService;
+import com.wuhao.email.util.EmailUtil;
 import com.wuhao.email.util.TextToHtml;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,6 +17,15 @@ import java.io.File;
 
 @Service
 public class EmailServiceImpl implements EmailService {
+    @Value("${myConfig.emailSendFrom}")
+    private String emailFrom;
+    @Value("${myConfig.emailSubject}")
+    private String emailSubject;
+    @Value("${myConfig.emailText}")
+    private String emailText;
+    @Value("${myConfig.emailVerifyPath}")
+    private String emailVerifyPath;
+
     @Autowired
     JavaMailSender javaMailSender;
 
@@ -32,24 +43,6 @@ public class EmailServiceImpl implements EmailService {
         javaMailSender.send(mailMessage);
     }
 
-    /**
-     * 发送一份html邮件
-     * @param emailMessage
-     */
-    @Override
-    public void sendHtmlEmail(EmailMessage emailMessage) {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(message,true);
-            helper.setFrom(emailMessage.getForm());
-            helper.setSubject(emailMessage.getSubject());
-            helper.setTo(emailMessage.getTo());
-            helper.setText(emailMessage.getText(),true);
-            javaMailSender.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * 发送一份表单邮件，判断附件信息，图片展示
@@ -100,8 +93,28 @@ public class EmailServiceImpl implements EmailService {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-
-
     }
 
+    /**
+     * 发送验证邮件
+     * @param emailTo 发送对象
+     */
+    @Override
+    public String sendVerifyEmail(String emailTo) {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        //获取邮件验证码
+        String emailVerifyCode = EmailUtil.getEmailVerifyCode();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message,true);
+            helper.setFrom(emailFrom);
+            helper.setSubject(emailSubject);
+            helper.setTo(emailTo);
+            helper.setText(emailText+emailVerifyPath+emailVerifyCode,true);
+            javaMailSender.send(message);
+            return emailVerifyCode;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

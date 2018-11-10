@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
 @Slf4j
 public class EmailUtil {
     public static final Integer MAX_SUBJECT_COUNT = 128;
@@ -72,5 +74,14 @@ public class EmailUtil {
             }
         }
         return EmailCode.EMAIL_SEND_SUCCESS;
+    }
+
+    /**
+     * 生成邮箱验证码
+     * @return
+     */
+    public static String getEmailVerifyCode(){
+      String emailVerifyCode = UUID.randomUUID().toString();
+      return emailVerifyCode;
     }
 }
