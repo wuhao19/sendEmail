@@ -2,7 +2,6 @@ package com.wuhao.email.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -21,51 +20,37 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user")
-public class User implements Serializable {
+public class Event implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 用户id
+     * 主键
      */
-    @TableId(value = "user_id", type = IdType.AUTO)
-    private Integer userId;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
 
     /**
-     * 用户名
+     * 事件触发的模块
      */
-    private String userName;
+    private String eventModel;
 
     /**
-     * 用户密码
+     * 事件触发者
      */
-    private String userPassword;
+    private Integer uid;
 
     /**
-     * 用户邮箱
+     * 事件触发的时间
      */
-    private String userEmail;
+    private LocalDateTime eventTime;
+
+    private String eventType;
 
     /**
-     * 用户的手机号
+     * 事件触发的内容
      */
-    private String userPhone;
-
-    /**
-     * 邮箱的验证状态 1是未验证 0已经验证
-     */
-    private Integer emailStatus = 1;
-
-    /**
-     * 手机的验证状态 1是未验证 0已经验证
-     */
-    private Integer phoneStatus = 1;
-
-    /**
-     * 用户的头像
-     */
-    private String userIcon;
+    private String eventData;
 
     /**
      * 创建时间

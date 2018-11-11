@@ -1,8 +1,7 @@
-package com.wuhao.email.domain;
+package com.wuhao.email.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -21,8 +20,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user")
-public class User implements Serializable {
+public class UserDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -65,12 +63,12 @@ public class User implements Serializable {
     /**
      * 用户的头像
      */
-    private String userIcon;
+    private String userInco;
 
     /**
      * 创建时间
      */
-    private LocalDateTime crateTime;
+    private LocalDateTime creatTime;
 
     /**
      * 更新时间
@@ -80,12 +78,17 @@ public class User implements Serializable {
     /**
      * 创建人
      */
-    private Integer crateBy;
+    private Integer creatBy;
 
     /**
      * 更新人
      */
     private Integer updateBy;
+
+    /**
+     * 电话验证码
+     */
+    private String phoneVerifyCode=null;
 
 
 }

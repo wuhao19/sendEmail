@@ -30,11 +30,11 @@
                 </tr>
                 <tr>
                     <td>电话号码：</td>
-                    <td ><span th:text="*{getUserPhone()}" /><span th:text="*{getUserPhoneVerify()} eq '0'?'(已验证)':'(未验证)'"></span></td>
+                    <td ><span th:text="*{getUserPhone()}" /><span th:text="*{getPhoneStatus()} eq '0'?'(已验证)':'(未验证)'"></span></td>
                 </tr>
                 <tr>
                     <td>邮箱：</td>
-                    <td><span th:text="*{getUserEmail()}" /><span th:text="*{getUserEmailVerify()} eq '0'?'(已验证)':'(未验证)'"></span><span th:if="*{getUserEmailVerify()} eq '1'"><input type="button"  onclick="sendAjax()" id="emailVerify" value="点击验证"></span></td>
+                    <td><span th:text="*{getUserEmail()}" /><span th:text="*{getEmailStatus()} eq '0'?'(已验证)':'(未验证)'"></span><span th:if="*{getEmailStatus()} eq '1'"><input type="button"  onclick="sendAjax()" id="emailVerify" value="点击验证"></span></td>
                 </tr>
                 </tbody>
             </table>

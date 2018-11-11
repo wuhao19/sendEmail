@@ -6,9 +6,11 @@ import lombok.Data;
 public class LoginMode {
     public static final int SUCCESS=0;
     public static final int ERROR=-1;
-    public static final int LOGIN_TYPE_ACCESS=0;
-    public static final int LOGIN_TYPE_EMAIL=1;
-    public static final int LOGIN_TYPE_PHONE=2;
+
+    public static final int LOGIN_TYPE_ACCESS=0;//成功登录
+    public static final int LOGIN_TYPE_EMAIL=1;//邮箱登录
+    public static final int LOGIN_TYPE_PHONE=2;//电话号码登录
+    public static final int LOGIN_TYPE_USERNAME=3;//用户名登录
     /***
      * 0 正常成功登陆  -1表示登陆失败
      */

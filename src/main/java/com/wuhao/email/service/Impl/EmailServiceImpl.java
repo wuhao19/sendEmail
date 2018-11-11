@@ -1,21 +1,33 @@
 package com.wuhao.email.service.Impl;
 import com.wuhao.email.domain.EmailMessage;
+import com.wuhao.email.domain.Event;
+import com.wuhao.email.domain.User;
+import com.wuhao.email.domain.Verify;
 import com.wuhao.email.service.EmailService;
+import com.wuhao.email.service.IEventService;
+import com.wuhao.email.service.IUserService;
+import com.wuhao.email.service.IVerifyService;
 import com.wuhao.email.util.EmailUtil;
 import com.wuhao.email.util.TextToHtml;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
+@Slf4j
 public class EmailServiceImpl implements EmailService {
     @Value("${myConfig.emailSendFrom}")
     private String emailFrom;
@@ -26,8 +38,20 @@ public class EmailServiceImpl implements EmailService {
     @Value("${myConfig.emailVerifyPath}")
     private String emailVerifyPath;
 
+    public static final int EMAIL_VERIFY=1;
+
+    public static final String EVENT_EMAIL_MODEL="发送验证邮件";
+    public static final String EVENT_TYPE="邮件";
+    public static final String EVENT_EMAIL_ERROR="邮件发送失败";
+
     @Autowired
-    JavaMailSender javaMailSender;
+    private JavaMailSender javaMailSender;
+    @Autowired
+    private IEventService eventService;
+    @Autowired
+    private IVerifyService verifyService;
+    @Autowired
+    private IUserService userService;
 
     /**
      * 发送一份简单的邮件
@@ -78,7 +102,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void endEnclosureEmail(String to, String form, String subject, String content, String rscPath, String rscId) {
+    public void sendEnclosureEmail(String to, String form, String subject, String content, String rscPath, String rscId) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = null;
         try {
@@ -99,22 +123,95 @@ public class EmailServiceImpl implements EmailService {
      * 发送验证邮件
      * @param emailTo 发送对象
      */
+    @Async
     @Override
-    public String sendVerifyEmail(String emailTo) {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        //获取邮件验证码
-        String emailVerifyCode = EmailUtil.getEmailVerifyCode();
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(message,true);
-            helper.setFrom(emailFrom);
-            helper.setSubject(emailSubject);
-            helper.setTo(emailTo);
-            helper.setText(emailText+emailVerifyPath+emailVerifyCode,true);
-            javaMailSender.send(message);
-            return emailVerifyCode;
-        } catch (MessagingException e) {
-            e.printStackTrace();
+    public boolean sendVerifyEmail(String emailTo) {
+        if(StringUtils.isBlank(emailTo)){
+            return false;
         }
-        return null;
+        String emailVerifyCode = EmailUtil.getEmailVerifyCode();//获取邮件验证码
+        User user = userService.findUserByEmail(emailTo); //根据邮箱获取用户
+        if(!saveEmailVerifyCode(user.getUserId(), emailVerifyCode)){//保存邮箱验证码 用于验证邮箱是否过期
+            return false;
+        }
+        try {
+            if(!initAndSendVerifyEmail(emailTo,emailVerifyCode)){ //构造邮件并发送
+                return false;
+            }
+            return true;
+        } catch (MessagingException e) {
+            //记录邮件发送异常的事件
+            log.error("邮件发送失败：{}",e.getMessage());
+        }finally {
+            //TODO 进行记录返回值判断
+            recordEmailErrorEvent(EVENT_EMAIL_ERROR,user.getUserId());
+            return false;
+        }
+    }
+
+    /**
+     * 构造验证邮件并发送
+     * @param emailTo
+     * @param emailVerifyCode
+     * @return
+     * @throws MessagingException
+     */
+    private boolean initAndSendVerifyEmail(String emailTo,String emailVerifyCode) throws MessagingException{
+        if (StringUtils.isBlank(emailTo)||StringUtils.isBlank(emailVerifyCode)){
+            return false;
+        }
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message,true);
+        helper.setFrom(emailFrom);
+        helper.setSubject(emailSubject);
+        helper.setTo(emailTo);
+        helper.setText(emailText+emailVerifyPath+emailVerifyCode,true);
+        javaMailSender.send(message);
+        return true;
+    }
+    /**
+     * 记录邮件验证失败的事件
+     * @param message
+     * @param userId
+     * @return
+     */
+    private boolean recordEmailErrorEvent(String message,int userId){
+        if(StringUtils.isBlank(message)|| userId==0){
+            return false;
+        }
+        Event event = new Event();
+        LocalDateTime date = LocalDateTime.now();
+        event.setCrateBy(userId);
+        event.setEventModel(EVENT_EMAIL_MODEL);
+        event.setEventType(EVENT_TYPE);
+        event.setEventData(message);
+        event.setEventTime(date);
+        if (!eventService.saveEvent(event)){
+            return false;
+        }else {
+            return true;
+        }
+    }
+    /**
+     * 构建邮箱验证对象保存数据库
+     * @param userId
+     * @param emailVerifyCode
+     * @return
+     */
+    private boolean saveEmailVerifyCode(int userId,String emailVerifyCode){
+        if(StringUtils.isBlank(emailVerifyCode)||userId==0){
+            return false;
+        }
+        Verify verify = new Verify();
+        Date date = new Date();
+        verify.setUid(userId);
+        verify.setContent(emailVerifyCode);
+        verify.setType(EMAIL_VERIFY);
+        verify.setCreatBy(userId);
+        verify.setOverTime(date);
+        if (!verifyService.saveVerifyCode(verify)){
+            return false;
+        }
+        return true;
     }
 }

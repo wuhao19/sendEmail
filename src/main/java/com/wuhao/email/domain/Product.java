@@ -2,17 +2,17 @@ package com.wuhao.email.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ * 商品表
  * </p>
  *
  * @author wuhao
@@ -21,51 +21,42 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user")
-public class User implements Serializable {
+public class Product implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 用户id
-     */
-    @TableId(value = "user_id", type = IdType.AUTO)
-    private Integer userId;
+    @TableId(value = "product_id", type = IdType.AUTO)
+    private Integer productId;
 
     /**
-     * 用户名
+     * 商品的名称
      */
-    private String userName;
+    private String productName;
 
     /**
-     * 用户密码
+     * 商品的简单描述
      */
-    private String userPassword;
+    private String productDescription;
 
     /**
-     * 用户邮箱
+     * 商品的详情表
      */
-    private String userEmail;
+    private String productDetails;
 
     /**
-     * 用户的手机号
+     * 商品的单价
      */
-    private String userPhone;
+    private BigDecimal productPrice;
 
     /**
-     * 邮箱的验证状态 1是未验证 0已经验证
+     * 商品的类型编号
      */
-    private Integer emailStatus = 1;
+    private Integer categoryType;
 
     /**
-     * 手机的验证状态 1是未验证 0已经验证
+     * 商品的状态
      */
-    private Integer phoneStatus = 1;
-
-    /**
-     * 用户的头像
-     */
-    private String userIcon;
+    private Integer productStatus;
 
     /**
      * 创建时间

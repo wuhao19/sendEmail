@@ -1,7 +1,6 @@
 package com.wuhao.email.controller;
 import com.wuhao.email.Enum.EmailCode;
 import com.wuhao.email.domain.EmailMessage;
-import com.wuhao.email.form.Message;
 import com.wuhao.email.service.EmailService;
 import com.wuhao.email.util.EmailUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ import java.io.*;
 public class EmailController {
     @Autowired
     private EmailService emailService;
-    EmailMessage emailMessage = new EmailMessage();
+
     @GetMapping("/form")
     public ModelAndView form(){
         return new ModelAndView("form");
@@ -33,18 +32,20 @@ public class EmailController {
 
     /**
      * 发送任何一封邮件
-     * @param message dto传送的信息
+     * @param emailMessage dto传送的信息
      * @param multipartFile 传送的文件信息
      * @param model 返回的页面信息
      * @return 视图
      */
     @PostMapping("/send")
-    public String send(@Valid Message message,
+    public String send(@Valid EmailMessage emailMessage,
                              MultipartFile multipartFile,
                              Model model) {
-        EmailCode emailCode = EmailUtil.isMessage(message, multipartFile);
+        EmailCode emailCode = EmailUtil.isMessage(emailMessage, multipartFile);
+
+
         if (emailCode.getCode() == 100) {
-            BeanUtils.copyProperties(message, emailMessage);
+            BeanUtils.copyProperties(emailMessage, emailMessage);
             if (!multipartFile.isEmpty()) {
                 try {
                     emailMessage.setFilePath(EmailUtil.getFilePath(multipartFile));

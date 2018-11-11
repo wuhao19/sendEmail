@@ -1,7 +1,7 @@
 package com.wuhao.email.util;
 
 import com.wuhao.email.Enum.EmailCode;
-import com.wuhao.email.form.Message;
+import com.wuhao.email.domain.EmailMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,22 +53,22 @@ public class EmailUtil {
     /**
      * 判断mail传值是否为空，返回对应的EmailCode
      *
-     * @param message
+     * @param emailMessage
      * @param
      * @return
      */
-    public static EmailCode isMessage(Message message, MultipartFile multipartFile) {
-        if (message.getTo().equals("")&& message.getSubject().equals("") && message.getText().equals("")) {
+    public static EmailCode isMessage(EmailMessage emailMessage, MultipartFile multipartFile) {
+        if (emailMessage.getTo().equals("")&& emailMessage.getSubject().equals("") && emailMessage.getText().equals("")) {
             log.error("[邮件发送错误]：{}", EmailCode.EMAIL_MESSAGE_NULL.getMessage());
             return EmailCode.EMAIL_MESSAGE_NULL;
         } else {
-            if (message.getTo().equals("")) {
+            if (emailMessage.getTo().equals("")) {
                 log.error("[邮件发送错误]：{}", EmailCode.EMAIL_MESSAGE_TO_NULL.getMessage());
                 return EmailCode.EMAIL_MESSAGE_TO_NULL;
-            } else if (message.getSubject().equals("") || message.getSubject().length() >= MAX_SUBJECT_COUNT) {
+            } else if (emailMessage.getSubject().equals("") || emailMessage.getSubject().length() >= MAX_SUBJECT_COUNT) {
                 log.error("[邮件发送错误]：{}", EmailCode.EMAIL_MESSAGE_SUBJECT_NULL.getMessage());
                 return EmailCode.EMAIL_MESSAGE_SUBJECT_NULL;
-            } else if (message.getText().equals("") && multipartFile.isEmpty()) {
+            } else if (emailMessage.getText().equals("") && multipartFile.isEmpty()) {
                 log.error("[邮件发送错误]：{}", EmailCode.EMAIL_MESSAGE_TEXTANDMT_NULL.getMessage());
                 return EmailCode.EMAIL_MESSAGE_TEXTANDMT_NULL;
             }

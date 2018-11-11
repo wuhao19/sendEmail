@@ -1,6 +1,6 @@
 package com.wuhao.email.util;
 
-import com.wuhao.email.restDemo.YUNSMS;
+import com.wuhao.email.YUNSMS.YUNSMS;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Random;
