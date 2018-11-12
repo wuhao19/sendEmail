@@ -44,9 +44,14 @@ public class Product implements Serializable {
     private String productDetails;
 
     /**
+     * 商品的首图
+     */
+    private String productIcon;
+
+    /**
      * 商品的单价
      */
-    private BigDecimal productPrice;
+    private BigDecimal productPrice ;
 
     /**
      * 商品的类型编号
@@ -54,9 +59,9 @@ public class Product implements Serializable {
     private Integer categoryType;
 
     /**
-     * 商品的状态
+     * 商品的状态 1为下架 ，0为上架 默认为1下架
      */
-    private Integer productStatus;
+    private Integer productStatus=1;
 
     /**
      * 创建时间

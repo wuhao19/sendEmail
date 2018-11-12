@@ -4,6 +4,7 @@ import com.wuhao.email.domain.RegisterMode;
 import com.wuhao.email.domain.User;
 import com.wuhao.email.dto.UserDto;
 import com.wuhao.email.service.EmailService;
+import com.wuhao.email.service.IEventService;
 import com.wuhao.email.service.IUserService;
 import com.wuhao.email.util.CheckUtils;
 import com.wuhao.email.util.DtoTOPojoUtils;
@@ -13,12 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
+import java.util.concurrent.Future;
 
 @Controller
 @RequestMapping("/register")
@@ -35,6 +35,8 @@ public class UserRegisterController {
     private IUserService userService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private IEventService eventService;
 
     @GetMapping("/")
     public String register(Model model) {
@@ -71,13 +73,34 @@ public class UserRegisterController {
         User user = saveUserInfo(userInfo);
         // 清除Session 手机验证码
 //        session.removeAttribute(PHONE_KEY);
-        session.setAttribute("user", user);
-        //发送邮箱验证
-        if(!emailService.sendVerifyEmail(userInfo.getUserEmail())){
-            log.error(SEND_VERIFY_EMAIL_ERROR);
-            model.addAttribute("message",SEND_VERIFY_EMAIL_ERROR);
-        }
+        session.setAttribute("user",user);
+        //发送邮箱验证 异步调用
+        asyncSendVerifyEmail(userInfo.getUserEmail());
         return "login/login";
+    }
+
+    /**
+     * 异步执行验证邮件发送
+     * @param userEmail
+     */
+    private void asyncSendVerifyEmail(String userEmail){
+
+        Future<Boolean> result = null;
+        try {
+             result = emailService.sendVerifyEmail(userEmail);
+            while (true){
+                if(result.isDone()) {
+                    log.info("邮件发送线程异步调用执行成功！");
+                    break;
+                }
+                if (result.isCancelled()){
+                    log.info("邮件发送线程异步调用执行失败！");
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -103,11 +126,7 @@ public class UserRegisterController {
     public void sendEmail(HttpServletRequest request,Model model){
         HttpSession session = request.getSession();
         User userInfo =(User) session.getAttribute("user");
-        if(!emailService.sendVerifyEmail(userInfo.getUserEmail())){
-            log.error(SEND_VERIFY_EMAIL_ERROR);
-            model.addAttribute("message",SEND_VERIFY_EMAIL_ERROR);
-        }
-
+        asyncSendVerifyEmail(userInfo.getUserEmail());
     }
 
     /**
@@ -187,29 +206,4 @@ public class UserRegisterController {
         return new RegisterMode();
     }
 
-    /**
-     * 用户邮箱验证链接进行核实
-     * @param emailVerifyCode 用户的邮箱验证码
-     * @return
-     */
-    @GetMapping("/doVerifyEmail")
-    public ModelAndView doVerifyEmail(@PathParam("emailVerifyCode") String emailVerifyCode,
-                                      HttpServletRequest request,Model model) {
-        HttpSession session = request.getSession();
-        String verifyCode = (String) session.getAttribute("emailVerifyCode");
-        if (!CheckUtils.checkUtils(verifyCode,emailVerifyCode)){
-            model.addAttribute("message","邮箱验证失败");
-            return new ModelAndView("common/error");
-        }
-        if(!verifyCode.equals(emailVerifyCode)){
-            model.addAttribute("message","邮箱验证失败");
-            return new ModelAndView("common/error");
-        }
-        model.addAttribute("message","邮箱验证成功");
-        UserDto userInfo =(UserDto) session.getAttribute("user");
-        userInfo.setEmailStatus(0);//0为邮箱已经验证
-        session.setAttribute("user",userInfo);
-        session.removeAttribute("emailVerifyCode");
-        return new ModelAndView("index");
-    }
 }

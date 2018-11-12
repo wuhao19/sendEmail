@@ -1,4 +1,5 @@
 package com.wuhao.email.service.Impl;
+
 import com.wuhao.email.domain.EmailMessage;
 import com.wuhao.email.domain.Event;
 import com.wuhao.email.domain.User;
@@ -9,6 +10,7 @@ import com.wuhao.email.service.IUserService;
 import com.wuhao.email.service.IVerifyService;
 import com.wuhao.email.util.EmailUtil;
 import com.wuhao.email.util.TextToHtml;
+import com.wuhao.email.util.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +20,13 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.concurrent.Future;
 
 @Service
 @Slf4j
@@ -42,7 +44,8 @@ public class EmailServiceImpl implements EmailService {
 
     public static final String EVENT_EMAIL_MODEL="发送验证邮件";
     public static final String EVENT_TYPE="邮件";
-    public static final String EVENT_EMAIL_ERROR="邮件发送失败";
+    public static final String EVENT_EMAIL_ERROR="获取验证邮件时失败了";
+    public static final String EVENT_EMAIL_SUCCESS="获取了验证邮件";
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -125,27 +128,32 @@ public class EmailServiceImpl implements EmailService {
      */
     @Async
     @Override
-    public boolean sendVerifyEmail(String emailTo) {
+    public Future<Boolean> sendVerifyEmail(String emailTo) {
         if(StringUtils.isBlank(emailTo)){
-            return false;
+            log.error(EVENT_EMAIL_ERROR);
+            return new AsyncResult<Boolean>(false);
         }
         String emailVerifyCode = EmailUtil.getEmailVerifyCode();//获取邮件验证码
         User user = userService.findUserByEmail(emailTo); //根据邮箱获取用户
         if(!saveEmailVerifyCode(user.getUserId(), emailVerifyCode)){//保存邮箱验证码 用于验证邮箱是否过期
-            return false;
+            log.error(EVENT_EMAIL_ERROR);
+            return new AsyncResult<Boolean>(false);
         }
         try {
-            if(!initAndSendVerifyEmail(emailTo,emailVerifyCode)){ //构造邮件并发送
-                return false;
+            if(!initAndSendVerifyEmail(emailTo, emailVerifyCode)){ //构造邮件并发送
+                log.error(EVENT_EMAIL_ERROR);
+                return new AsyncResult<Boolean>(false);
             }
-            return true;
         } catch (MessagingException e) {
             //记录邮件发送异常的事件
             log.error("邮件发送失败：{}",e.getMessage());
+            recordEmailErrorEvent(EVENT_EMAIL_ERROR, user.getUserId());
+            log.error(EVENT_EMAIL_ERROR);
+            return new AsyncResult<Boolean>(false);
         }finally {
             //TODO 进行记录返回值判断
-            recordEmailErrorEvent(EVENT_EMAIL_ERROR,user.getUserId());
-            return false;
+            recordEmailErrorEvent(EVENT_EMAIL_SUCCESS, user.getUserId());
+            return new AsyncResult<Boolean>(false);
         }
     }
 
@@ -175,21 +183,21 @@ public class EmailServiceImpl implements EmailService {
      * @param userId
      * @return
      */
-    private boolean recordEmailErrorEvent(String message,int userId){
+    private void recordEmailErrorEvent(String message,int userId){
         if(StringUtils.isBlank(message)|| userId==0){
-            return false;
+            log.warn("验证邮件发送事件记录时为空");
+            return;
         }
         Event event = new Event();
-        LocalDateTime date = LocalDateTime.now();
         event.setCrateBy(userId);
+        event.setUpdateBy(userId);
         event.setEventModel(EVENT_EMAIL_MODEL);
+        event.setUid(userId);
         event.setEventType(EVENT_TYPE);
         event.setEventData(message);
-        event.setEventTime(date);
+        event.setEventTime(TimeUtils.getNowTime());
         if (!eventService.saveEvent(event)){
-            return false;
-        }else {
-            return true;
+            log.warn("验证邮件发送事件记录时失败");
         }
     }
     /**
@@ -203,12 +211,12 @@ public class EmailServiceImpl implements EmailService {
             return false;
         }
         Verify verify = new Verify();
-        Date date = new Date();
+        verify.setOverTime(TimeUtils.getEmailVerifyExitTime());//获取当前时间的后一天
         verify.setUid(userId);
         verify.setContent(emailVerifyCode);
         verify.setType(EMAIL_VERIFY);
         verify.setCreatBy(userId);
-        verify.setOverTime(date);
+        verify.setUpdateBy(userId);
         if (!verifyService.saveVerifyCode(verify)){
             return false;
         }

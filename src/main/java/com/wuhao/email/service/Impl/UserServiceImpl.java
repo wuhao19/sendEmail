@@ -28,7 +28,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param user
      * @return
      */
-    private boolean updateUserInfo(User user) {
+    public boolean updateUserInfo(User user) {
         if (user==null){
             return false;
         }

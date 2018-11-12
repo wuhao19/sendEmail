@@ -30,5 +30,10 @@ public interface IUserService extends IService<User> {
     User loginByPhone(String userPhone,String password);
     User loginByUserName(String userName,String password);
 
-
+    /**
+     * 更新用户信息
+     * @param user
+     * @return
+     */
+    boolean updateUserInfo(User user);
 }

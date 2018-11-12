@@ -32,4 +32,13 @@ public class VerifyServiceImpl extends ServiceImpl<VerifyMapper, Verify> impleme
         }
         return true;
     }
+
+    @Override
+    public Verify findVerifyByUserId(int userId) {
+        Verify verify= verifyMapper.findVerifyByUserId(userId);
+        if(verify == null){
+            return null;
+        }
+        return verify;
+    }
 }

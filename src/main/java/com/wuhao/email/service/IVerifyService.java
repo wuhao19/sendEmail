@@ -14,4 +14,5 @@ import com.wuhao.email.domain.Verify;
  */
 public interface IVerifyService extends IService<Verify> {
      boolean saveVerifyCode(Verify verify);
+     Verify findVerifyByUserId(int userId);
 }

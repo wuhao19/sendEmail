@@ -13,4 +13,6 @@ import com.wuhao.email.domain.Product;
  */
 public interface IProductService extends IService<Product> {
 
+    boolean addProductFrom(Product product);
+
 }

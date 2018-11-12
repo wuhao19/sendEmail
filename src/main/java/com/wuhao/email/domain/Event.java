@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -43,7 +44,7 @@ public class Event implements Serializable {
     /**
      * 事件触发的时间
      */
-    private LocalDateTime eventTime;
+    private Date eventTime;
 
     private String eventType;
 

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>添加商品</title>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <div style="width: 100%;height: 50px">
+                <h3 style="float: left"  > <span/>添加商品</h3>
+                <button type="button" class="btn btn-default" style="float: right;margin-top: 20px">批量上传</button>
+            </div>
+            <hr/>
+            <form role="form" action="/product/doAddProduct" method="post">
+                <div class="form-group">
+                    <label >商品名称：</label>
+                    <input type="text" th:value="${product.getProductName()}" class="form-control" name="productName"/>
+                </div>
+                <div class="form-group">
+                    <label >商品的描述 ：</label>
+                    <input type="text" th:value="${product.getProductDescription()}" class="form-control" name="productDescription"/>
+                </div>
+                <div class="form-group">
+                    <label>商品单价：</label>
+                    <input type="text" th:value="${product.getProductPrice()}" class="form-control" name="productPrice" ></input>
+                </div>
+                <div class="form-group">
+                    <label>商品类型：</label>
+                    <input type="text" th:value="${product.getCategoryType()}" class="form-control" name="categoryType" ></input>
+                </div>
+                <div class="form-group">
+                    <label>商品状态：</label>
+                    <input type="text" th:value="${product.getProductStatus()}" class="form-control" name="productStatus" ></input>
+                </div>
+                <div class="form-group">
+                    <label>商品首图：</label>
+                    <input type="text" th:value="${product.getProductIcon()}" class="form-control" name="productIcon" ></input>
+                </div>
+                <div class="form-group">
+                    <label >商品的描述 ：</label>
+                    <textarea typeof="text" th:text="${product.getProductDetails()}" class="form-control" name="productDetails" ></textarea>
+                </div>
+                <!--<div class="form-group">-->
+                    <!--<label for="exampleInputFile">上传附件</label>-->
+                    <!--<input type="file" id="exampleInputFile" name="multipartFile" />-->
+                    <!--<p class="help-block">-->
+                        <!--Example block-level help text here.-->
+                    <!--</p>-->
+                <!--</div>-->
+                <button type="submit" class="btn btn-default">保存</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
