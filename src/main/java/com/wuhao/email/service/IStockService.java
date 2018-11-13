@@ -9,8 +9,8 @@ import com.wuhao.email.domain.Stock;
  * </p>
  *
  * @author wuhao
- * @since 2018-11-11
+ * @since 2018-11-12
  */
 public interface IStockService extends IService<Stock> {
-
+    boolean addStockBy(Stock stock);
 }

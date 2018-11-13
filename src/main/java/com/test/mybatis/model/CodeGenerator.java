@@ -91,7 +91,7 @@
 //        strategy.setEntityLombokModel(true);
 //        strategy.setRestControllerStyle(true);
 ////        strategy.setSuperControllerClass("com.baomidou.ant.common.BaseController");
-////        strategy.setInclude(scanner("*/"));
+//        strategy.setInclude(scanner("stock"));
 ////        strategy.setSuperEntityColumns("id");
 ////        strategy.setTablePrefix("tb_");
 //        strategy.setControllerMappingHyphenStyle(true);

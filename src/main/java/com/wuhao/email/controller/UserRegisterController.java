@@ -11,6 +11,7 @@ import com.wuhao.email.util.DtoTOPojoUtils;
 import com.wuhao.email.util.RegisterAssUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,6 @@ import java.util.concurrent.Future;
 @Controller
 @RequestMapping("/register")
 @Slf4j
-
 public class UserRegisterController {
 
     private static final String PHONE_KEY = "PHONE_KEY";
@@ -47,7 +47,6 @@ public class UserRegisterController {
 
     /**
      * 注册用户提交的信息页面
-     *
      * @param userInfo 获取用户输入信息
      * @param model        返换用户的对象
      * @param request      request请求
@@ -83,7 +82,8 @@ public class UserRegisterController {
      * 异步执行验证邮件发送
      * @param userEmail
      */
-    private void asyncSendVerifyEmail(String userEmail){
+    @Async
+    public void asyncSendVerifyEmail(String userEmail){
 
         Future<Boolean> result = null;
         try {
@@ -131,7 +131,6 @@ public class UserRegisterController {
 
     /**
      * 注册过程中出现错误封装返回的数据格式
-     *
      * @param model 返换用户的对象
      * @param msg 返回页面的message信息
      * @param userInfo 用户的model对象

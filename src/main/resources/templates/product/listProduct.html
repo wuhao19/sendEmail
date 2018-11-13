@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>listProduct</title>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <div style="width: 100%;height: 50px">
+                <h3 style="float: left"  > <span/>商品列表</h3>
+                <button type="submit" style="float: right;margin-top: 15px" class="btn btn-default" onclick="jumpAddProduct()">添加商品</button>
+                <script>
+                    function jumpAddProduct() {
+                        window.location.href="http://localhost:8080/product/addProduct";
+                    }
+                </script>
+            </div>
+            <div style="width: 100%;height: 20px;margin-top: 10px">
+                <a href="http://localhost:8080/product/Downloads?page=0&type=2"  style="float: right">导出所有Excel</a>
+                <a href="#" th:href="@{'http://localhost:8080/product/Downloads?page='+${current}+'&type=1'}" style="float: right;margin-right: 5px">导出当前页Excel</a>
+            </div>
+            <table class="table table-hover table-bordered" style="margin-top: 10px;">
+                <thead>
+                <tr>
+                    <th>商品id</th>
+                    <th>商品小图</th>
+                    <th>商品名称</th>
+                    <th>商品描述</th>
+                    <th>商品单价</th>
+                    <th>商品库存</th>
+                    <th>商品类别</th>
+                    <th>商品状态</th>
+                    <th>最近更新时间</th>
+                    <th>最近更新人</th>
+                    <th colspan="2">操作</th>
+                </tr>
+                </thead>
+                <tbody th:each="product:${productList}">
+                <tr>
+                    <td th:text="${product.getProductId()}">商品id</td>
+                    <td><img style="width: 50px;height: 50px" src="" th:src="${product.getProductIcon()}"></td>
+                    <td th:text="${product.getProductName()}">商品名称</td>
+                    <td th:text="${product.getProductDescription()}">商品描述</td>
+                    <td th:text="${product.getProductPrice()}">商品单价</td>
+                    <td >商品库存</td>
+                    <td th:text="${product.getCategoryType()}">商品类别</td>
+                    <td th:text="${product.getProductStatus()}">商品状态</td>
+                    <td th:text="${product.getUpdateTime()}">最近更新时间</td>
+                    <td th:text="${product.getUpdateBy()}">最近更新人</td>
+                    <td >查看</td>
+                    <td >修改</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+            <div class="col-md-12 column" style="margin: 10px auto;">
+                <ul class="pagination">
+                    <li><a href="http://localhost:8080/product/listProduct?page=1" style="color: black">首页</a></li>
+                    <li th:if="${current ne 1}"><a href="#" th:href="@{'http://localhost:8080/product/listProduct?page='+${current-1}}" style="color: black">上一页</a></li>
+                    <li th:each="pageOn:${#numbers.sequence(0,pageCount)}" th:if="${pageOn ne pageCount}" > <a href="#" th:href="@{'http://localhost:8080/product/listProduct?page='+${pageOn+1}}" th:style="${pageOn+1 eq current?'background-color: grey;color: white':'background-color: white;color: black'}" ><span th:text="${pageOn+1}">2</span></a></li>
+                    <li th:if="${current ne pageCount }"><a href="#"  th:href="@{'http://localhost:8080/product/listProduct?page='+${current+1}}" style="color: black">下一页</a></li>
+                    <li><a href="#" th:href="@{'http://localhost:8080/product/listProduct?page='+${current}}" style="color: black">尾页</a></li>
+                </ul>
+            </div>
+    </div>
+</div>
+</body>
+</html>

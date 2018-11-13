@@ -11,7 +11,11 @@
         <div class="col-md-12 column">
             <div style="width: 100%;height: 50px">
                 <h3 style="float: left"  > <span/>添加商品</h3>
-                <button type="button" class="btn btn-default" style="float: right;margin-top: 20px">批量上传</button>
+                <form action="/product/doAddProduct/excel" style="float: right;width: auto;height: 50px" method="post" enctype="multipart/form-data">
+                    <input type="file" name="multipartFile" style="float: left; margin-top: 15px"  value="批量上传">
+                    <button type="submit" style="float: left;margin-top: 10px" class="btn btn-default" >批量上传</button>
+                </form>
+
             </div>
             <hr/>
             <form role="form" action="/product/doAddProduct" method="post">
@@ -42,6 +46,9 @@
                 <div class="form-group">
                     <label >商品的描述 ：</label>
                     <textarea typeof="text" th:text="${product.getProductDetails()}" class="form-control" name="productDetails" ></textarea>
+                </div>
+                <div class="form-group">
+                    <label style="letter-spacing: 2px;color: darkred;" th:if="${message ne null}"  class="col-sm-12 control-label" th:text="${message}">1111111111111111</label>
                 </div>
                 <!--<div class="form-group">-->
                     <!--<label for="exampleInputFile">上传附件</label>-->

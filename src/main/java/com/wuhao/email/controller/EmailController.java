@@ -43,7 +43,7 @@ public class EmailController {
     @Autowired
     private IUserService userService;
 
-    @GetMapping("/form")
+    @GetMapping("/email")
     public ModelAndView form(){
         return new ModelAndView("form");
     }
@@ -60,8 +60,6 @@ public class EmailController {
                              MultipartFile multipartFile,
                              Model model) {
         EmailCode emailCode = EmailUtil.isMessage(emailMessage, multipartFile);
-
-
         if (emailCode.getCode() == 100) {
             BeanUtils.copyProperties(emailMessage, emailMessage);
             if (!multipartFile.isEmpty()) {
