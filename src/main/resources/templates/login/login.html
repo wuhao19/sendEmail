@@ -16,18 +16,24 @@
                     <label  class="col-sm-2 control-label">用户名：</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" th:value="${userName}"  placeholder="用户名/手机/邮箱" name="userName" />
-                        <h5 style="margin-top: 20px;letter-spacing: 2px;color: darkred;" th:if="${message != null}">*<span  th:text="${message}"/></h5>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">密码：</label>
                     <div class="col-sm-10">
                         <input type="password" class="form-control" placeholder="用户密码" name="userPassword" />
+                        <h5 style="margin-top: 20px;letter-spacing: 2px;color: darkred;" th:if="${message != null}">*<span  th:text="${message}"/></h5>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-default">登录</button>
+                        <button type="button" class="btn btn-default"style="float: right;margin-right: 50px" onclick="jumpRegister()">注册>></button>
+                        <script>
+                            function jumpRegister() {
+                                window.location.href="http://localhost:8080/register/"
+                            }
+                        </script>
                     </div>
                 </div>
             </form>

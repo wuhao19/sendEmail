@@ -1,6 +1,8 @@
 package com.wuhao.email.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wuhao.email.domain.Product;
+import com.wuhao.email.domain.User;
+import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.service.IProductService;
 import com.wuhao.email.util.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,15 +61,15 @@ public class ProductController {
           //执行导出当前页面
            workbook= productService.downLodeExcel(type,page);
             if (!initExcelFile(response,workbook)){
-                //返回错误页面
+                throw new MyException(5,"【下载文件】：进行下载文集的初始化失败");
             }
         }else if (type==2){
             workbook= productService.downLodeExcel(type,page);
             if (!initExcelFile(response,workbook)){
-                //返回错误页面
+                throw new MyException(5,"【下载文件】：进行下载文集的初始化失败");
             }
         }else {
-            //返回错误页面
+            throw new MyException(5,"【下载文件】：目标文件需要下载的部分出现错误");
         }
     }
 
@@ -108,18 +107,18 @@ public class ProductController {
     public String listProduct(@RequestParam(value = "page",defaultValue = "1") String page,
                               Model model){
         int current = initPage(page);//初始化查询页面
-        //TODO 获取查询的商品
+        // 获取查询的商品
         IPage<Product> productIPage = productService.listAllProduct(current);
         if (productIPage==null){
-            //返回商品为空页面
+            throw new MyException(1,"商品库没有任何商品");
         }
         long pageCount = productIPage.getPages();//返回当前查询类型的最大页数用于前端分页
         List<Product> productList = productIPage.getRecords();//返回当前页面展示的类容
         long total = productIPage.getTotal();//返回查询到的总记录数
-        model.addAttribute("pageCount",pageCount);
+        model.addAttribute("pageCount",pageCount);//总页数
         model.addAttribute("productList",productList);
-        model.addAttribute("total",total);
-        model.addAttribute("current",current);
+        model.addAttribute("total",total);//总商品数量
+        model.addAttribute("current",current);//当前页
         return "product/listProduct";
     }
 
@@ -147,25 +146,26 @@ public class ProductController {
      * @return
      */
     @PostMapping("/doAddProduct/excel")
-    public String doAddProductFromExcel(@RequestParam("multipartFile") MultipartFile multipartFile,HttpSession session){
+    public String doAddProductFromExcel(@RequestParam("multipartFile") MultipartFile multipartFile,HttpServletRequest request){
         //获取上传的用户信息
-        //  User user =(User) session.getAttribute("user");
+        HttpSession session = request.getSession();
+        User user = (User)session.getAttribute("user");
         // 判断文件是否合法
         if (!checkProductExcelFile(multipartFile)) {
-           return "common/error";
+            throw new MyException(2,"你上传的文件不合法");
         }
         // 进行文件解析成为一个商品list
         try {
             List<Product> productList = analysisExcelToProduct(multipartFile);
             if (productList.size()==0){
-                return "common/error";
+                throw new MyException(2,"商品文件解析完成后，未发现商品");
             }
             // 调用server 进行数据存储
-            if (!saveProductList(productList)) {
-                return "common/error";
+            if (!saveProductList(productList,user)) {
+                throw new MyException(2,"商品在保存到数据库时失败啦");
             }
         }catch (Exception e){
-            e.printStackTrace();
+            throw new MyException(2,"用ecxel批量上传文件时失败");
         }
         //保存成功 返回商品的list 页面
         return "product/listProduct";
@@ -176,13 +176,15 @@ public class ProductController {
      * @param productList
      * @return
      */
-    private boolean saveProductList(List<Product> productList){
+    private boolean saveProductList(List<Product> productList,User user){
         if(productList.size()==0){
-            return false;
+            throw new MyException(3,"批量进行商品保存到数据库时，商品列表为空");
         }
         for (Product product :productList){
+            product.setUpdateBy(user.getUserId());
+            product.setCrateBy(user.getUserId());
             if(!productService.addProductFrom(product)){
-                return false;
+                throw new MyException(3,"批量进行商品保存到数据库时，商品保存失败");
             }
         }
         return true;
@@ -238,23 +240,23 @@ public class ProductController {
         String productName = row.getCell(0).getStringCellValue();
         if (StringUtils.isBlank(productName)){
             log.error("商品名称的列不能为空");
-            return null;
+            throw new MyException(6,"【上传商品文件失败】：商品名称的列不能为空");
         }
         String productDescription = row.getCell(1).getStringCellValue();
         if (StringUtils.isBlank(productDescription)){
             log.error("商品的描述不能为空");
-            return null;
+            throw new MyException(6,"【上传商品文件失败】：商品的描述不能为空");
         }
         String productDetails = row.getCell(2).getStringCellValue();
         if (StringUtils.isBlank(productDetails)){
             log.error("商品的详细描述不能为空");
-            return null;
+            throw new MyException(6,"【上传商品文件失败】：商品的详细描述不能为空");
         }
 
         double productPriceD = row.getCell(3).getNumericCellValue();
         if (productPriceD==0.0){
             log.error("商品的单价不能为空");
-            return null;
+            throw new MyException(6,"【上传商品文件失败】：商品的单价不能为空");
         }
         BigDecimal porductPrice = new BigDecimal(productPriceD);
 
@@ -262,16 +264,15 @@ public class ProductController {
         String categoryTypeString = row.getCell(4).getStringCellValue();
         if (StringUtils.isBlank(categoryTypeString)){
             log.error("商品的类型不能为空");
-            return null;
+            throw new MyException(6,"【上传商品文件失败】：商品的类型不能为空");
         }
         int categoryType = Integer.parseInt(categoryTypeString);
-
 
         row.getCell(5).setCellType(HSSFCell.CELL_TYPE_STRING);//将数字做字符串处
         String productStatusString = row.getCell(5).getStringCellValue();//商品的状态 1为下架  0位上架
         if (StringUtils.isBlank(productStatusString)){
             log.error("商品的状态不能为空");
-            return null;
+            throw new MyException(6,"【上传商品文件失败】：商品的状态不能为空");
         }
         int productStatus = Integer.parseInt(productStatusString);
         Product product = new Product();
@@ -299,7 +300,7 @@ public class ProductController {
         String  fileName= file.getOriginalFilename();
         if (!fileName.endsWith(".xls")&&!fileName.endsWith(".xlsx")&&!fileName.endsWith(".xlsm")){
             log.error("传入的文件不是一个Excel文件");
-            return false;
+            throw new MyException(6,"【上传商品文件失败】：传入的文件不是一个Excel文件");
         }
         return true;
     }
@@ -315,15 +316,16 @@ public class ProductController {
                                Model model){
         HttpSession session = request.getSession();
         // 检查用户添加的商品信息是否合法
-        System.out.println("================================>");
         if(!checkProduct(product)){
             //返回商品信息不合法
             model.addAttribute("message","商品添加失败，原因：商品信息录入不合法");
             session.setAttribute("product",product);
             return "product/addProduct";
         }
+        //获取操作用户的信息
+        User user = (User) session.getAttribute("user");
         // 进行商品的添加操作
-        if (!addProduct(product)) {
+        if (!addProduct(product,user)) {
             //返回商品信息不合法
             model.addAttribute("message","商品添加失败，原因：商品录入数据库失败");
             session.setAttribute("product",product);
@@ -331,7 +333,7 @@ public class ProductController {
         }
         // 添加成功 返回商品列表页面
         model.addAttribute("message","商品添加成功");
-        return "product/listProduct";
+        return "redirect:/product/listProduct";
     }
 
     /**
@@ -339,12 +341,14 @@ public class ProductController {
      * @param product
      * @return
      */
-    private boolean addProduct(Product product){
-        if (product==null){
-            return false;
+    private boolean addProduct(Product product,User user){
+        if (product==null||user==null){
+            throw new MyException(2,"上传的商品或者，当前操作的用户信息不合法");
         }
+        product.setCrateBy(user.getUserId());
+        product.setUpdateBy(user.getUserId());
         if (!productService.addProductFrom(product)) {
-            return false;
+            throw new MyException(2,"[添加商品]，添加商品时对数据库操作失败");
         }
         return true;
     }

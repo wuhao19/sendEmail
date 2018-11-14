@@ -27,6 +27,7 @@ public class UserLoginController {
     @Autowired
     private IUserService userService;
 
+
     /**
      * 初始化登录页面
      *
@@ -68,7 +69,7 @@ public class UserLoginController {
         HttpSession session = request.getSession();
         session.setAttribute("user",user);
         //登录成功
-        return "index";
+        return "redirect:/product/listProduct";
     }
     /**
      * 进行登录操作
