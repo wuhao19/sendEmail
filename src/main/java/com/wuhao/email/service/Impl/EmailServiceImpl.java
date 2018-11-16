@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.util.Date;
 import java.util.concurrent.Future;
 
 @Service
@@ -195,7 +196,7 @@ public class EmailServiceImpl implements EmailService {
         event.setUid(userId);
         event.setEventType(EVENT_TYPE);
         event.setEventData(message);
-        event.setEventTime(TimeUtils.getNowTime());
+        event.setEventTime(new Date());
         if (!eventService.saveEvent(event)){
             log.warn("验证邮件发送事件记录时失败");
         }

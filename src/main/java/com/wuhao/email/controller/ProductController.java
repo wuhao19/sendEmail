@@ -1,7 +1,9 @@
 package com.wuhao.email.controller;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wuhao.email.domain.Product;
 import com.wuhao.email.domain.User;
+import com.wuhao.email.dto.ProductDto;
 import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.service.IProductService;
 import com.wuhao.email.util.TimeUtils;
@@ -18,7 +20,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -41,6 +42,11 @@ import java.util.List;
 @Controller
 @RequestMapping("/product")
 public class ProductController {
+
+
+
+
+
     @Autowired
     private IProductService productService;
 
@@ -74,7 +80,7 @@ public class ProductController {
     }
 
     /**
-     * 初始化文件并返回
+     * 初始化Excel下载文件
      * @param response
      * @param workbook
      * @return
@@ -83,12 +89,12 @@ public class ProductController {
         if (response==null || workbook == null){
             return false;
         }
-        String fileName = TimeUtils.getNowTime()+".xls";
+        String fileName = TimeUtils.getNowTimeString()+".xls";
         try {
             response.setContentType("application/octet-stream");
             response.setHeader("Content-disposition", "attachment;filename=" + fileName);
-            response.flushBuffer();
             workbook.write(response.getOutputStream());
+            //response.flushBuffer();
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -96,19 +102,35 @@ public class ProductController {
         }
     }
 
-
     /**
      * 获取商品的列表
      * @param page
      * @param model
      * @return
      */
-    @GetMapping("/listProduct")
+    @RequestMapping("/listProduct")
     public String listProduct(@RequestParam(value = "page",defaultValue = "1") String page,
+                              @Valid ProductDto productDto,
+                              HttpServletRequest request,
                               Model model){
+        HttpSession session = request.getSession();
+        ProductDto productDtoSession = (ProductDto) session.getAttribute("productDto");
+        if (!productService.checkProductIsEntiy(productDtoSession)){
+            session.setAttribute("productDto",productDto);
+        }else {
+            //session 已经设置
+           if (!productDtoSession.equals(productDto)){
+               if (!productService.checkProductIsEntiy(productDto)){
+                   productDto = (ProductDto) session.getAttribute("productDto");
+               }else {
+                   session.setAttribute("productDto",productDto);//查找值已经改变
+               }
+           }
+        }
+
         int current = initPage(page);//初始化查询页面
         // 获取查询的商品
-        IPage<Product> productIPage = productService.listAllProduct(current);
+        IPage<Product> productIPage = productService.listAllProduct(current,productDto);
         if (productIPage==null){
             throw new MyException(1,"商品库没有任何商品");
         }
@@ -119,11 +141,12 @@ public class ProductController {
         model.addAttribute("productList",productList);
         model.addAttribute("total",total);//总商品数量
         model.addAttribute("current",current);//当前页
+        model.addAttribute("productDto",productDto);
         return "product/listProduct";
     }
 
     /**
-     * 对请求的页面进行初始化
+     * 对用户请求的商品列表页进行初始化
      * @param page
      * @return
      */

@@ -3,6 +3,7 @@ package com.wuhao.email.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wuhao.email.domain.Product;
+import com.wuhao.email.dto.ProductDto;
 import org.apache.poi.ss.usermodel.Workbook;
 
 /**
@@ -17,8 +18,10 @@ public interface IProductService extends IService<Product> {
 
     boolean addProductFrom(Product product);
 
-    IPage<Product> listAllProduct(int page);
+    IPage<Product> listAllProduct(int page, ProductDto productDto);
 
     Workbook downLodeExcel(int type, int current);
+
+    boolean checkProductIsEntiy(ProductDto productDto);
 
 }

@@ -66,4 +66,18 @@ public class CheckUtils {
         }
         return true;
     }
+
+    /**
+     * 检查一个对象是否为空
+     * @param o
+     * @return
+     */
+    public boolean checkObjectIsEnpty(Object o){
+        if (o==null){
+            return false;
+        }
+        return true;
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.wuhao.email.util;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -21,8 +22,10 @@ public class TimeUtils {
      * 获取当前的时间
      * @return
      */
-   public static Date getNowTime(){
+   public static String getNowTimeString(){
        Date date = new Date();
-       return date;
+       SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd hh:mm:ss");
+       return simpleDateFormat.format(date);
+
    }
 }

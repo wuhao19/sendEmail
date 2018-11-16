@@ -2,6 +2,7 @@ package com.wuhao.email.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.wuhao.email.Enum.ProductStatusEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -61,7 +62,7 @@ public class Product implements Serializable {
     /**
      * 商品的状态 1为下架 ，0为上架 默认为1下架
      */
-    private Integer productStatus=1;
+    private Integer productStatus=ProductStatusEnum.DOWN.getProductStatusCode();
 
     /**
      * 创建时间

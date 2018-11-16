@@ -25,6 +25,7 @@ public class MyInterceptor implements WebMvcConfigurer {
                 User user =(User) session.getAttribute("user");
                 if (user==null){
                     System.out.println("用户没有登录");
+                    //TODO 不能这样写
                     response.sendRedirect(response.encodeRedirectURL("http://localhost:8080/login/"));
                     return false;
                 }
