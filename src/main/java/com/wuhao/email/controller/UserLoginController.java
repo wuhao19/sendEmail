@@ -2,6 +2,7 @@ package com.wuhao.email.controller;
 
 import com.wuhao.email.domain.LoginMode;
 import com.wuhao.email.domain.User;
+import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,8 +40,7 @@ public class UserLoginController {
     }
 
     /**
-     * 用户进行登录操作
-     *
+     * 管理员进行登录操作
      * @param userName     用户名or电话or邮箱
      * @param userPassword 密码
      * @param model
@@ -69,8 +69,41 @@ public class UserLoginController {
         HttpSession session = request.getSession();
         session.setAttribute("user",user);
         //登录成功
-        return "redirect:/product/listProduct";
+        return "redirect:/shop/listProduct";
     }
+    /**
+     * 用户进行登录操作
+     * @param username 用户名or电话or邮箱
+     * @param username 密码
+     * @param model
+     * @param request
+     * @return
+     */
+    @PostMapping("/doLoginUser")
+    public String doLoginUser(@RequestParam("username") String username,
+                          @RequestParam("password") String password,
+                          Model model,
+                          HttpServletRequest request
+    ) {
+        //检查传值的 userName 和 password 是否合法
+        if (!checkScanInfo(username, password)) {
+            //用户输入信息不合法
+           throw new MyException(123,"用户输入信息不合法");
+        }
+        //判断用户的登录方式
+        LoginMode loginMode = loginType(username);
+        //进行登录操作
+        User user = doLoginByMode(loginMode, username, password);
+        if (user==null) {
+            throw new MyException(123,"账户或者密码输入错误");
+        }
+        //设置session
+        HttpSession session = request.getSession();
+        session.setAttribute("user",user);
+        //登录成功
+        return "redirect:/shop/listProduct";
+    }
+
     /**
      * 进行登录操作
      * @param loginMode

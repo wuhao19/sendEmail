@@ -31,6 +31,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     public static final String POSITIVE_SEQUENCE = "0";//正序
     public static final String REVERSE_ORDER = "1";//倒序
 
+    public static final String UP = "0";//商品上架
+
     @Value("${myConfig.listProductSize}")
     private int LIST_PRODUCT_SIZE;
 
@@ -67,20 +69,24 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
              //直接进行筛选
              productIPage = productMapper.selectPage(page,new QueryWrapper<>());
          }else {
-             productIPage = productMapper.selectPage(page,new QueryWrapper<Product>().
-                     like(!StringUtils.isBlank(productDto.getKeyName()),"product_name",productDto.getKeyName()).
-//                     like(!StringUtils.isBlank(productDto.getKeyName()),"product_description",productDto.getKeyName())
-//                     orderBy(StringUtils.isBlank(productDto.getProductStockSort()),!productDto.getProductStockSort().equals(POSITIVE_SEQUENCE),"") //TODO 商品的库存正序倒序排列
-                     eq(!StringUtils.isBlank(String.valueOf(productDto.getCategoryType())),"category_type",productDto.getCategoryType()).
-                     eq(!StringUtils.isBlank(String.valueOf(productDto.getProductStatus())),"product_status",productDto.getProductStatus())
-//                     between(!StringUtils.isBlank(String.valueOf(productDto.getStarDate())) && !StringUtils.isBlank(String.valueOf(productDto.getEndDate())),"update_time", Date.valueOf(String.valueOf(productDto.getStarDate())),Date.valueOf(String.valueOf(productDto.getEndDate()))
-             );
-
+             productIPage = productMapper.selectPage(page,initQueryWrapper(productDto));
          }
         if (productIPage==null) return null;
         return productIPage;
     }
 
+    /**
+     * 构造筛选条件
+     * @param productDto
+     * @return
+     */
+    private QueryWrapper<Product> initQueryWrapper(ProductDto productDto) {
+        QueryWrapper<Product> queryWrapper = new QueryWrapper<>();
+                queryWrapper.like(!StringUtils.isBlank(productDto.getKeyName()), "product_name", productDto.getKeyName()).
+                eq(!StringUtils.isBlank(String.valueOf(productDto.getCategoryType())), "category_type", productDto.getCategoryType()).
+                eq(!StringUtils.isBlank(String.valueOf(productDto.getProductStatus())), "product_status", productDto.getProductStatus());
+                return queryWrapper;
+    }
     /**
      * 判断ProductDto是否为空
      * @param productDto
@@ -107,19 +113,21 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return true;
     }
 
+
+
     /**
      * 导出商品信息
      * @param type
      */
     @Override
-    public Workbook downLodeExcel(int type,int current) {
+    public Workbook downLodeExcel(int type,int current,ProductDto productDto) {
         //根据类型获取 商品的列表
         List<Product> productList;
         if (type==1){//获取用户当前页的内容
-            IPage<Product> productIPage = listAllProduct(current,new ProductDto());
+            IPage<Product> productIPage = listAllProduct(current,productDto);
             productList = productIPage.getRecords();
-        }else {
-            productList = productMapper.selectList(new QueryWrapper<>());
+        }else {//获取当前筛选类型的所有表格
+            productList = productMapper.selectList(initQueryWrapper(productDto));
         }
         //构建Excel文件
         Workbook workbook = new HSSFWorkbook();
@@ -149,4 +157,16 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return workbook;
     }
 
+    @Override
+    public List<Product> listAllProduct() {
+        return productMapper.selectList(new QueryWrapper<Product>().eq("product_status", UP));
+    }
+
+    @Override
+    public Product findProductById(int productId,int productNum) {
+        Product product = productMapper.selectById(productId);
+        //TODO 查询商品的库存是否足够 不足够返回空
+
+        return product;
+    }
 }

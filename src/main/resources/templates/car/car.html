@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column" style="margin-top: 10px">
+            <h3 style="margin-right: auto"> <span/>购物车清单</h3>
+            <div style="margin-top: 10px">
+                <ul class="list-inline">
+                    <li>用户名：<span th:text="${user.getUserName()}" ></span></li>|
+                </ul>
+            </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>图片</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>合计</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="produc:${productList}">
+                    <td th:text="${produc.getProductName()}">商品名称</td>
+                    <td><img style="width: 50px;height: 50px" th:src="${produc.getProductIcon()}"></td>
+                    <td th:text="${produc.getProductPrice()}">单价</td>
+                    <td>数量</td>
+                    <td>合计</td>
+                    <td>移除</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

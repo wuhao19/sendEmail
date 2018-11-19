@@ -1,6 +1,7 @@
 package com.wuhao.email.interceptor;
 
 import com.wuhao.email.domain.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -16,6 +17,8 @@ import javax.servlet.http.HttpSession;
  */
 @Configuration
 public class MyInterceptor implements WebMvcConfigurer {
+    @Value("${VERIFY_ERROR_URL}")
+    private static String VERIFY_ERROR_URL;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         HandlerInterceptor handlerInterceptor = new HandlerInterceptor() {
@@ -24,12 +27,9 @@ public class MyInterceptor implements WebMvcConfigurer {
                 HttpSession session = request.getSession();
                 User user =(User) session.getAttribute("user");
                 if (user==null){
-                    System.out.println("用户没有登录");
-                    //TODO 不能这样写
-                    response.sendRedirect(response.encodeRedirectURL("http://localhost:8080/login/"));
+                    response.sendRedirect(response.encodeRedirectURL(VERIFY_ERROR_URL));
                     return false;
                 }
-                System.out.println("用户已经登录");
                 return true;
             }
 
@@ -43,6 +43,6 @@ public class MyInterceptor implements WebMvcConfigurer {
 
             }
         };
-        registry.addInterceptor(handlerInterceptor).addPathPatterns("/**").excludePathPatterns("/login/*").excludePathPatterns("/register/*");
+        registry.addInterceptor(handlerInterceptor).addPathPatterns("/**").excludePathPatterns("/shop/listProduct").excludePathPatterns("/login/*").excludePathPatterns("/register/*");
     }
 }

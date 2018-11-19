@@ -41,3 +41,8 @@ myConfig:
   emailVerifyPath: http://127.0.0.1:8080/form/doVerifyEmail?emailVerifyCode=
 
   listProductSize: 3
+
+  VERIFY_ERROR_URL: http://localhost:8080/login/
+  REDIRECT_URL:
+  CAR_URL: http://localhost:8080/car/showCar
+  REGISTER_URL: http://localhost:8080/register/
