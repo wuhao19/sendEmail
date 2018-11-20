@@ -91,7 +91,7 @@ public class CodeGenerator {
         strategy.setEntityLombokModel(true);
         strategy.setRestControllerStyle(true);
 //        strategy.setSuperControllerClass("com.baomidou.ant.common.BaseController");
-        strategy.setInclude(scanner("car"));
+        strategy.setInclude(scanner("order"));
 //        strategy.setSuperEntityColumns("id");
 //        strategy.setTablePrefix("tb_");
         strategy.setControllerMappingHyphenStyle(true);

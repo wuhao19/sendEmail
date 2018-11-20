@@ -1,10 +1,15 @@
 package com.wuhao.email.controller;
 
 
-import com.wuhao.email.domain.*;
+import com.wuhao.email.domain.Car;
+import com.wuhao.email.domain.Product;
+import com.wuhao.email.domain.ResultMode;
+import com.wuhao.email.domain.User;
 import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.service.ICarService;
 import com.wuhao.email.service.IProductService;
+import com.wuhao.email.vo.CarVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +37,9 @@ import java.util.List;
 @RequestMapping("/car")
 public class CarController {
     @Value("${myConfig.REDIRECT_URL}")
-    private static String REDIRECT_URL;
+    private  String REDIRECT_URL;
+    @Value("${myConfig.GO_SETTLEMENT_URL}")
+    private  String GO_SETTLEMENT_URL;
 
     @Autowired
     private IProductService productService;
@@ -72,18 +80,23 @@ public class CarController {
         User user = (User)session.getAttribute("user");
         //进行数据库该用户的购物车查询
         List<Car> carList = carService.findCarByUserId(user.getUserId());
-        List<Product> productList= new ArrayList<>();
-        Product product;
+        List<CarVo> carVoList = new ArrayList<>();
+        CarVo carVo;
+        Product product=null;
         //遍历查询商品信息
         for (Car car : carList){
            product= productService.findProductById(car.getPid(),0);//0无任何作用 补充位置
             if (product!=null){
-                productList.add(product);
+                carVo = new CarVo();
+                BeanUtils.copyProperties(product,carVo);
+                carVo.setProductNum(car.getPNum());
+                carVo.setProductPriceCount(product.getProductPrice().multiply(new BigDecimal(car.getPNum())));//设置商品总价
+                carVoList.add(carVo);
             }
         }
-        model.addAttribute("productList",productList);
-        model.addAttribute("carList",carList);
+        model.addAttribute("carVoList",carVoList);
         model.addAttribute("user",user);
+        model.addAttribute("goSettlement",GO_SETTLEMENT_URL);
         return "car/car";
     }
 }

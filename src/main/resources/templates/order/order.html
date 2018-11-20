@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>order</title>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column" style="margin-top: 10px">
+            <h3 style="margin-right: auto"> <span/>确认订单</h3>
+            <div style="margin-top: 10px">
+                <ul class="list-inline">
+                    <li>订单编号：<span th:text="${order.getId()}"></span></li>|
+                    <li>用户名：<span th:text="${order.getUserName()}"></span></li>|
+                    <li>联系电话：<span th:text="${order.getUserPhone()}"></span></li>|
+                    <li>地址：<span th:text="${order.getUserAddress()}"></span></li>
+                </ul>
+                <ul class="list-inline">
+                    <li>订单创建时间：<span th:text="${order.getCrateTime()}"></span></li>|
+                    <li>订单创建人：<span th:text="${order.getCreatBy()}"></span></li>
+                </ul>
+            </div>
+            <table class="table">
+                <h4 style="margin-right: auto"> <span/>订单详情</h4>
+                <thead>
+                <tr >
+                    <th >商品名称</th>
+                    <th >图片</th>
+                    <th >单价</th>
+                    <th >数量</th>
+                    <th >合计</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="orderDetail:${order.getOrderDetails()}">
+                    <td th:text="${orderDetail.getProductName()}">商品名称</td>
+                    <td><img style="width: 50px;height: 50px" th:src="${orderDetail.getProductIcon()}"></td>
+                    <td th:text="${orderDetail.getProductPrice()}">单价</td>
+                    <td th:text="${orderDetail.getProductNum()}">数量</td>
+                    <td th:text="${orderDetail.getProductTotal()}">合计</td>
+                </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 10px">
+                <ul class="list-inline">
+                    <li>订单状态：<span th:text="${order.getOrderStatus()}"></span></li>|
+                    <li>总计金额：<span th:text="${order.getOrderTotal()}"></span></li>|
+                    <li>支付方式：<span th:text="${order.getPayType()}"></span></li>|
+                    <li>支付状态：<span th:text="${order.getPayStatus()}"></span></li>
+                </ul>
+            </div>
+            <hr style="color: grey">
+            <a class="button btn bg-primary" style="float: right" th:href="@{${doPayUrl}+'?payType='+${order.getPayType()}+'&orderId='+${order.getId()}}" >去支付</a>
+            <a class="button btn bg-primary" style="float: left" th:href="@{${cancelOrder}+'?orderId='+${order.getId()}}">取消订单</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

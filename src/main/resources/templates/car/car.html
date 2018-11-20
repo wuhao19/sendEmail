@@ -29,20 +29,21 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="produc:${productList}">
-                    <td th:text="${produc.getProductName()}">商品名称</td>
-                    <td><img style="width: 50px;height: 50px" th:src="${produc.getProductIcon()}"></td>
-                    <td th:text="${produc.getProductPrice()}">单价</td>
-                    <td>数量</td>
-                    <td>合计</td>
+                <tr th:each="carVo:${carVoList}">
+                    <td th:text="${carVo.getProductName()}">商品名称</td>
+                    <td><img style="width: 50px;height: 50px" th:src="${carVo.getProductIcon()}"></td>
+                    <td th:text="${carVo.getProductPrice()}">单价</td>
+                    <td th:text="${carVo.getProductNum()}">数量</td>
+                    <td th:text="${carVo.getProductPriceCount()}">合计</td>
                     <td>移除</td>
                 </tr>
                 </tbody>
             </table>
+            <hr style="color: grey">
+            <button class="btn bg-success" style="float: left" >继续购物</button>
+            <a class="btn bg-success" style="float: right" th:href="${goSettlement}">去结算</a>
         </div>
     </div>
 </div>
-
-
 </body>
 </html>

@@ -42,7 +42,10 @@ myConfig:
 
   listProductSize: 3
 
-  VERIFY_ERROR_URL: http://localhost:8080/login/
+  VERIFY_ERROR_URL: http://localhost:8080/shop/listProduct
   REDIRECT_URL:
   CAR_URL: http://localhost:8080/car/showCar
   REGISTER_URL: http://localhost:8080/register/
+  GO_SETTLEMENT_URL: http://localhost:8080/order/showOrder
+  DO_PAY_URL: http://localhost:8080/order/doPay
+  CANCEL_ORDER_URL: http://localhost:8080/order/cancelOrder

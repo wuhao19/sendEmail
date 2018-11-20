@@ -17,7 +17,7 @@ import javax.servlet.http.HttpSession;
  */
 @Configuration
 public class MyInterceptor implements WebMvcConfigurer {
-    @Value("${VERIFY_ERROR_URL}")
+    @Value("${myConfig.VERIFY_ERROR_URL}")
     private static String VERIFY_ERROR_URL;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
