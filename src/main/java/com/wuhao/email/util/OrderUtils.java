@@ -6,7 +6,8 @@ public class OrderUtils {
 
     public static String InitOrderId(){
         Date date = new Date();
-        return String.valueOf(date.getTime()/100);
+        String orderId = String.valueOf(date.getTime() / 100);
+        return orderId;
     }
 
 }

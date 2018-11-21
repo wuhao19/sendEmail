@@ -1,6 +1,7 @@
 package com.wuhao.email.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wuhao.email.domain.LoginMode;
 import com.wuhao.email.domain.User;
 
 /**
@@ -22,10 +23,9 @@ public interface IUserService extends IService<User> {
 
     /**
      * 用户的3种登录方式
-     * @param userEmail
-     * @param password
      * @return
      */
+    User doLogin(String userName, String password, LoginMode loginMode);
     User loginByEmail(String userEmail,String password);
     User loginByPhone(String userPhone,String password);
     User loginByUserName(String userName,String password);

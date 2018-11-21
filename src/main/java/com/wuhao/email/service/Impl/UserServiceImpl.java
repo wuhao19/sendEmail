@@ -1,6 +1,7 @@
 package com.wuhao.email.service.Impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wuhao.email.domain.LoginMode;
 import com.wuhao.email.domain.User;
 import com.wuhao.email.mapper.UserMapper;
 import com.wuhao.email.service.IUserService;
@@ -257,5 +258,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }else {
             return true;
         }
+    }
+
+    @Override
+    public User doLogin(String userName, String password, LoginMode loginMode) {
+        if (StringUtils.isBlank(userName)||StringUtils.isBlank(password)||loginMode==null){
+            return null;
+        }
+        User user;
+        switch (loginMode.getLoginType()){
+            case 1://邮箱登录
+                user=loginByEmail(userName,password);
+                break;
+            case 2://电话登录
+                user = loginByPhone(userName,password);
+                break;
+            case 3://用户名登录
+                user = loginByUserName(userName,password);
+                break;
+                default:
+                    user = null;
+                    break;
+        }
+        return user;
     }
 }

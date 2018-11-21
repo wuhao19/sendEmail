@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>order</title>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column" style="margin-top: 10px">
+            <h3 style="margin-right: auto"><span/>确认订单</h3>
+            <div style="margin-top: 10px">
+                <ul class="list-inline" id="orderLi1">
+
+                </ul>
+            </div>
+            <table class="table">
+                <h4 style="margin-right: auto"><span/>订单详情</h4>
+                <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>图片</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>合计</th>
+                </tr>
+                </thead>
+                <tbody id="orderDetailBody">
+
+                </tbody>
+            </table>
+            <div style="margin-top: 10px">
+                <ul class="list-inline" id="orderLi2">
+
+                </ul>
+            </div>
+            <hr style="color: grey">
+            <div id="button-box">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for (var i = 0; i < strs.length; i++) {
+                theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+
+    $(document).ready(function () {
+        var Request = new Object();
+        Request = GetRequest();
+        var orderId = Request['orderId'];
+        $.ajax({
+            url: '/user/order/findOneOrder',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {
+                orderId: orderId
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    showOrderLi(data.date.orderMaster);
+                    showOrderDetail(data.date.orderDetailList);
+                    showButtonBox(data.date.orderMaster.id)
+                } else {
+                    alert(data.message);//跳转到错误界面
+                }
+            },
+            error: function (xhr, textStatus, data) {
+            },
+            complete: function () {
+            }
+        })
+    })
+
+    function showButtonBox(orderId) {
+        str = "";
+        str += '<button class="button btn bg-primary" style="float: right"  onclick="goPay(' + orderId + ')" >支付</button>';
+        str += ' <button class="button btn bg-primary" style="float: left" onclick="goCancelOrder('+orderId+')" >取消订单</button>';
+        $("#button-box").html(str);
+    }
+    function goCancelOrder(orderId) {
+        $.ajax({
+            url: '/user/order/cancelOrder',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {
+                orderId: orderId
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    alert("订单取消成功！");
+                    window.location.href = "userOrder1.html";
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function (xhr, textStatus, data) {
+            },
+            complete: function () {
+            }
+        })
+    }
+
+    function goPay(orderId, payType) {
+        $.ajax({
+            url: '/user/order/goPay',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {
+                orderId: orderId,
+                payType: 0
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    alert("下单成功！");
+                    window.location.href = "userOrder1.html";
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function (xhr, textStatus, data) {
+            },
+            complete: function () {
+            }
+        })
+    }
+
+    function showOrderLi(orderInfo) {
+        str1 = "";
+        str1 += '<li>订单编号：' + orderInfo.id + '</li>|';
+        str1 += ' <li>用户名：' + orderInfo.userName + '</li>|';
+        str1 += '<li>联系电话：' + orderInfo.userPhone + '</li>|';
+        str1 += '<li>地址：' + orderInfo.userAddress + '</li>|';
+        str1 += '<li>订单创建时间：' + orderInfo.crateTime + '</li>|';
+        str1 += '<li>订单创建人：' + orderInfo.creatBy + '</li>';
+        $("#orderLi1").html(str1);
+        str2 = "";
+        str2 += '<li>订单状态：' + orderStatus(orderInfo.orderStatus) + '</li>|';
+        str2 += ' <li>总计金额：' + orderInfo.orderTotal + '元</li>|';
+        str2 += ' <li>支付状态：' + payStatus(orderInfo.payStatus) + '</li>';
+        $("#orderLi2").html(str2);
+
+        function payStatus(payStatus) {
+            switch (payStatus) {
+                case 0:
+                    return "未支付";
+                    break;
+                case 1:
+                    return "已支付";
+                    break;
+                default:
+                    return "未知状态";
+                    break;
+            }
+        }
+
+        function orderStatus(orderStatus) {
+            switch (orderStatus) {
+                case 0:
+                    return "待支付";
+                    break;
+                case 1:
+                    return "已支付";
+                    break;
+                case 2:
+                    return "已取消";
+                    break;
+                case 3:
+                    return "已发货";
+                    break;
+                case 4:
+                    return "已完成";
+                    break;
+                case 5:
+                    return "已取消,退款中";
+                    break;
+                case 6:
+                    return "已取消,已退款";
+                    break;
+                case 7:
+                    return "已作废";
+                    break;
+                default:
+                    return "未知状态"
+                    break;
+            }
+        }
+    }
+
+    function showOrderDetail(orderDetail) {
+        str = "";
+        $.each(orderDetail, function (i, vaule) {
+            str += '<tr >';
+            str += ' <td >' + vaule.productName + '</td>';
+            str += '<td><img style="width: 50px;height: 50px" src="' + vaule.productIcon + '" ></td> ';
+            str += '  <td >' + vaule.productPrice + '元</td>';
+            str += ' <td >' + vaule.productNum + '件</td>';
+            str += ' <td >' + vaule.productTotal + '元</td> ';
+            str += '</tr>';
+        })
+        $("#orderDetailBody").html(str);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title2</title>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+</head>
+<body>
+<table class="table table-hover table-bordered" style="margin-top: 20px;">
+    <thead>
+    <tr>
+        <th>订单编号</th>
+        <th>用户名称</th>
+        <th>联系电话</th>
+        <th>订单地址</th>
+        <th>支付状态</th>
+        <th>支付类型</th>
+        <th>订单状态</th>
+        <th>订单金额</th>
+        <th>下单时间</th>
+        <th>完成时间</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody  id="tbody">
+
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url:'/order/showAllOrder',
+            type:'GET', //GET
+            async:true,    //或false,是否异步
+            data:{
+                current: 1
+            },
+            timeout:5000,    //超时时间
+            dataType:'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend:function(xhr){
+
+            },
+            success:function(data,textStatus,jqXHR){
+               if (data.code==0){
+                   show(data.date.orderMasterList);
+               }else {
+                   alert(data.message);
+               }
+
+            },
+            error:function(xhr,textStatus,data){
+
+            },
+            complete:function(){
+
+            }
+        })
+    })
+
+    function show(data) {
+        str="";
+        $.each(data,function(index,value){
+            str+='  <tr  >';
+            str+='    <td  >'+value.id+'</td>';
+            str+='     <td >用户名称</td>';
+            str+='    <td >联系电话</td>';
+            str+='    <td>订单地址</td>';
+            str+='    <td >支付状态</td>';
+            str+='    <td >支付类型</td>';
+            str+='    <td >订单状态</td>';
+            str+='    <td >订单金额</td>';
+            str+='    <td><span th:if="${order.getOrderStatus() ne 0?:_}" th:text="${order.getCrateTime()}">-</span></td>';
+            str+='  <td><span th:if="${order.getOrderStatus() ne 4?_:}" th:text="${order.getUpdateTime()}">-</span>';
+            str+='     </td>';
+            str+='     <td>查看详情</td>';
+            str+='     </tr>';
+        });
+
+        $("#tbody").html(str);
+
+    }
+</script>
+</body>
+</html>

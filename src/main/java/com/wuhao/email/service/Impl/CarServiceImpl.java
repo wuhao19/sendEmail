@@ -71,4 +71,13 @@ public class CarServiceImpl extends ServiceImpl<CarMapper, Car> implements ICarS
     public Integer findCarCount(int userId) {
        return carMapper.selectCount(new QueryWrapper<Car>().eq("uid", userId));
     }
+
+    @Override
+    public boolean clearCar(Car car) {
+        int result = carMapper.delete(new QueryWrapper<Car>().eq("id", car.getId()));
+        if (result==0){
+            return false;
+        }
+        return true;
+    }
 }

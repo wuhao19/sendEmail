@@ -1,8 +1,7 @@
 package com.wuhao.email.mapper;
 
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.wuhao.email.domain.Order;
+import com.wuhao.email.domain.OrderMaster;
 
 /**
  * <p>
@@ -12,6 +11,6 @@ import com.wuhao.email.domain.Order;
  * @author wuhao
  * @since 2018-11-20
  */
-public interface OrderMapper extends BaseMapper<Order> {
+public interface OrderMasterMapper extends BaseMapper<OrderMaster> {
 
 }

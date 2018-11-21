@@ -18,7 +18,7 @@ import javax.servlet.http.HttpSession;
 @Configuration
 public class MyInterceptor implements WebMvcConfigurer {
     @Value("${myConfig.VERIFY_ERROR_URL}")
-    private static String VERIFY_ERROR_URL;
+    private String VERIFY_ERROR_URL;
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         HandlerInterceptor handlerInterceptor = new HandlerInterceptor() {
@@ -43,6 +43,6 @@ public class MyInterceptor implements WebMvcConfigurer {
 
             }
         };
-        registry.addInterceptor(handlerInterceptor).addPathPatterns("/**").excludePathPatterns("/shop/listProduct").excludePathPatterns("/login/*").excludePathPatterns("/register/*");
+//        registry.addInterceptor(handlerInterceptor).addPathPatterns("/**").excludePathPatterns("/user/userIndex.html").excludePathPatterns("/user/doLogin").excludePathPatterns("/register/*").excludePathPatterns("/user/product/listAllProduct");
     }
 }

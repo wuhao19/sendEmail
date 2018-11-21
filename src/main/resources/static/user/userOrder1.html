@@ -82,31 +82,138 @@
                     <th>订单金额</th>
                     <th>下单时间</th>
                     <th>完成时间</th>
-                    <th>操作</th>
+                    <th colspan="2">操作</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr th:each="order:${orderMasterList}">
-                    <td th:text="${order.getId()}">订单编号</td>
-                    <td th:text="${order.getUserName()}">用户名称</td>
-                    <td th:text="${order.getUserPhone()}">联系电话</td>
-                    <td th:text="${order.getUserAddress()}">订单地址</td>
-                    <td th:text="${order.getPayStatus()}">支付状态</td>
-                    <td th:text="${order.getPayType()}">支付类型</td>
-                    <td th:text="${order.getOrderStatus()}">订单状态</td>
-                    <td th:text="${order.getOrderTotal()}">订单金额</td>
-                    <td><span th:if="${order.getOrderStatus() ne 0?:_}" th:text="${order.getCrateTime()}">-</span></td>
-                    <td><span th:if="${order.getOrderStatus() ne 4?_:}" th:text="${order.getUpdateTime()}">-</span>-
-                    </td>
-                    <td>查看详情</td>
-                </tr>
+                <tbody id="tbody">
+
                 </tbody>
             </table>
-            <h5 style="margin-top: 20px;letter-spacing: 2px;color: black;">消息统计: 合计查出订单<span>0</span>单;一共<span>0</span>页
+            <script>
+                $(document).ready(function () {
+                    $.ajax({
+                        url:'/user/order/showOrder',
+                        type:'POST', //GET
+                        async:true,    //或false,是否异步
+                        data:{
+                            page: 1
+                        },
+                        timeout:5000,    //超时时间
+                        dataType:'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+                        beforeSend:function(xhr){
+
+                        },
+                        success:function(data,textStatus,jqXHR){
+                            if (data.code==0){
+                                show(data.date.allOrder);
+                            }else {
+                                alert(data.message);//跳转到错误界面
+                            }
+                        },
+                        error:function(xhr,textStatus,data){
+                        },
+                        complete:function(){
+                        }
+                    })
+                })
+                function show(allOrder) {
+                    str="";
+                    $.each(allOrder,function (index,order) {
+                        str+='<tr>';
+                        str+='<td >'+order.id+'</td>';
+                        str+='<td >'+order.userName+'</td>';
+                        str+='<td >'+order.userPhone+'</td>';
+                        str+='<td >'+order.userAddress+'</td>';
+                        str+='<td >'+payStatus(order.payStatus)+'</td>';
+                        str+='<td >'+payType(order.payType)+'</td>';
+                        str+='<td >'+orderStatus(order.orderStatus)+'</td>';
+                        str+='<td >'+order.orderTotal+'</td>';
+                        str+='<td>'+order.crateTime+'</td>';
+                        str+='<td>'+order.updateTime+'</td>';
+                        str+='<td>'+goPay(order.payStatus,order.orderStatus,order.id)+'</td>';
+                        str+='<td><a href="#">查看详情</a></td>';
+                        str+='</tr>';
+                    })
+                    $("#tbody").html(str);
+                }
+
+                function goPay(payStatus,orderStatus,orderId) {
+                    if(payStatus==1){
+                        if (orderStatus==1){
+                            return "<a href='payOrder.html?orderId="+orderId+"'>去退款</a>"
+                        }else {
+                            return "--"
+                        }
+                    }else {
+                        return "<a href='payOrder.html?orderId="+orderId+"'>去支付</a>"
+                    }
+                }
+                function orderStatus(orderStatus) {
+                    switch (orderStatus) {
+                        case 0:
+                            return "待支付";
+                            break;
+                        case 1:
+                            return "已支付,待发货";
+                            break;
+                        case 2:
+                            return "已取消";
+                            break;
+                        case 3:
+                            return "已发货";
+                            break;
+                        case 4:
+                            return "已完成";
+                            break;
+                        case 5:
+                            return "已取消,退款中";
+                            break;
+                        case 6:
+                            return "已取消,已退款";
+                            break;
+                        case 7:
+                            return "已作废";
+                            break;
+                        default:
+                            return "未知状态"
+                            break;
+                    }
+                }
+                function payType(payType) {
+                    switch (payType) {
+                        case 0:
+                            return "货到付款";
+                            break;
+                        case 1:
+                            return "支付宝";
+                            break;
+                        case 2:
+                            return "微信支付";
+                            break;
+                        default:
+                            return "未知状态"
+                        break;
+                    }
+                }
+                function payStatus(payStatus) {
+                    switch (payStatus) {
+                        case 0:
+                            return "未支付";
+                            break;
+                        case 1:
+                            return "已支付";
+                            break;
+                        default:
+                            return "未知状态";
+                            break;
+                    }
+                }
+            </script>
+            <h5 style="margin-top: 20px;letter-spacing: 2px;color: black;" id="">消息统计: 合计查出订单<span>0</span>单;一共<span>0</span>页
             </h5>
         </div>
         <div class="col-md-12 column" style="margin: 10px auto;">
-            <ul class="pagination">
+            <ul class="pagination" id="pagination">
                 <li><a style="color: black">首页</a></li>
                 <li><a href="#" style="color: black">上一页</a></li>
                 <li>

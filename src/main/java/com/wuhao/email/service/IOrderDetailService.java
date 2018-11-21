@@ -1,10 +1,12 @@
 package com.wuhao.email.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wuhao.email.domain.Order;
 import com.wuhao.email.domain.OrderDetail;
+import com.wuhao.email.domain.OrderMaster;
 import com.wuhao.email.domain.Product;
 import com.wuhao.email.domain.User;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,5 +18,7 @@ import com.wuhao.email.domain.User;
  */
 public interface IOrderDetailService extends IService<OrderDetail> {
 
-    OrderDetail crateOrderDetail(Product product, int productNum, User user, Order order);
+    OrderDetail crateOrderDetail(Product product, int productNum, User user, OrderMaster order);
+
+    List<OrderDetail> findOneOrderMasterDetail(String orderId);
 }

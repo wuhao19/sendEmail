@@ -20,4 +20,5 @@ public interface ICarService extends IService<Car> {
 
     Integer findCarCount(int userId);
 
+    boolean clearCar(Car car);
 }

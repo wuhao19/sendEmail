@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>商城首页</title>
+    <link href="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/twitter-bootstrap/3.0.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row clearfix">
+        <div class="container">
+            <div class="row clearfix">
+                <div class="col-md-12 column">
+                    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <div class="navbar-left" role="search">
+                                <a  class="btn btn-default" href="userCar.html">购物车（）</a>
+                            </div>
+                            <div class="navbar-right">
+                                <div class="navbar-form" role="search" id="login">
+
+                                </div>
+                                <div id="carButton">
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+
+        <!--商品图片-->
+        <div class="col-md-12 column" style="margin-top: 60px">
+            <div class="row" id="product">
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/user/product/listAllProduct',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {},
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    showAllProduct(data.date.productList);
+                    var user=sessionStorage.getItem("user");
+                    if (user==null){
+                        showLogin();
+                    } else {
+                        showUserInfo(user);
+                    }
+
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function (xhr, textStatus) {
+                alert("初始化页面失败");
+            },
+            complete: function () {
+            }
+        });
+    })
+    function showLogin() {
+        str="";
+        str+=' <div class="form-group">'
+        str+=' <input type="text" class="form-control" id="username" placeholder="用户名/手机/邮箱"/>'
+        str+=' </div>'
+        str+='<div class="form-group">'
+        str+=' <input type="text" class="form-control" id="password" placeholder="密码"/>'
+        str+='  </div>'
+        str+='  <button  class="btn btn-default" onclick="doLogin()">登录</button>'
+        str+=' <button type="submit" class="btn btn-default">注册</button>'
+        $("#login").html(str);
+    }
+    function showAllProduct(productList) {
+        str = "";
+        $.each(productList, function (i, value) {
+            str += '<div class="col-md-3">';
+            str += '<div class="thumbnail">';
+            str += '<img alt="300x300" src="' + value.productIcon + '"  />';
+            str += '<div class="caption">';
+            str += '<h4>【' + value.productName + '】</h4>';
+            str += '<p >' + value.productDescription + '</p>';
+            str += ' <p>￥<span style="font-size: 25px;color: firebrick" >' + value.productPrice + '</span></p>';
+            str += ' <button class="btn " id="addCar" onclick="addCar('+value.productId+')" >加入购物车</button>';
+            str += ' <a class="btn btn-primary" href="#">立即购买</a>';
+            str += ' </div>';
+            str += ' </div>';
+            str += ' </div>';
+        })
+        $("#product").html(str);
+    }
+    function addCar(productId) {
+        $.ajax({
+            url: '/user/car/addCar',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {
+                productId: productId,
+                productNum: 1
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+
+            },
+            success: function (data, textStatus, jqXHR) {
+               if (data.code==0){
+                   alert("添加购物车成功！");
+               } else {
+                   alert(data.message);
+               }
+            },
+            error: function (xhr, textStatus, data) {
+                alert("连接超时");
+            },
+            complete: function () {
+            }
+        })
+    }
+    function doLogin(username,password) {
+        $.ajax({
+            url: '/user/doLogin',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {
+                userName: $("#username").val(),
+                password: $("#password").val()
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code==0){
+                    alert("登录成功");
+                    showUserInfo(data.date.user);
+
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function (xhr, textStatus, data) {
+               alert("连接超时");
+            },
+            complete: function () {
+            }
+        })
+    }
+function showUserInfo(user) {
+    $("#login").replaceWith("<p>欢迎你："+data.date.user.userName+"! </p>")
+
+}
+</script>
+
+</body>
+</html>

@@ -49,3 +49,10 @@ myConfig:
   GO_SETTLEMENT_URL: http://localhost:8080/order/showOrder
   DO_PAY_URL: http://localhost:8080/order/doPay
   CANCEL_ORDER_URL: http://localhost:8080/order/cancelOrder
+
+  ORDER_PAGE_SIZE: 3
+
+  ORDER_NULL_ERROR: "[用户端-订单查询]：该用户没有订单"
+
+  MAX_LENGTH: 32
+  MIN_LENGTH: 1
