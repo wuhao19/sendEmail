@@ -6,10 +6,8 @@ import com.wuhao.email.domain.OrderDetail;
 import com.wuhao.email.domain.OrderMaster;
 import com.wuhao.email.domain.Product;
 import com.wuhao.email.domain.User;
-import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.mapper.OrderDetailMapper;
 import com.wuhao.email.service.IOrderDetailService;
-import com.wuhao.email.util.OrderUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,13 +47,13 @@ public class OrderDetailServiceImpl extends ServiceImpl<OrderDetailMapper, Order
         orderDetail.setProductIcon(product.getProductIcon());
         orderDetail.setProductPrice(product.getProductPrice());
         orderDetail.setProductTotal(product.getProductPrice().multiply(new BigDecimal(productNum)));
-        orderDetail.setOrderId(OrderUtils.InitOrderId());
+        orderDetail.setOrderId(order.getId());
         orderDetail.setCreatBy(user.getUserId());
         orderDetail.setUpdatBy(user.getUserId());
         orderDetail.setPid(product.getProductId());
         int insert = orderDetailMapper.insert(orderDetail);
         if (insert==0){
-            throw new MyException(123,"订单详情插入失败");
+           return null;
         }
         return orderDetail;
     }

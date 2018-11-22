@@ -1,11 +1,8 @@
 package com.wuhao.email.controller;
 
-import com.wuhao.email.domain.ApiMode;
-import com.wuhao.email.domain.OrderDetail;
-import com.wuhao.email.domain.OrderMaster;
-import com.wuhao.email.domain.User;
-import com.wuhao.email.service.IOrderDetailService;
-import com.wuhao.email.service.IOrderMasterService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.wuhao.email.domain.*;
+import com.wuhao.email.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +21,16 @@ import java.util.Map;
 public class UserOrderController {
     @Value("${myConfig.ORDER_NULL_ERROR}")
     private String ORDER_NULL_ERROR;
-
     @Autowired
     private IOrderMasterService orderMasterService;
     @Autowired
     private IOrderDetailService orderDetailService;
+    @Autowired
+    private IAddressService addressService;
+    @Autowired
+    private ICarService carService;
+    @Autowired
+    private IProductService productService;
 
     /**
      * 用户根据页数和用户的登录信息查询订单
@@ -41,16 +45,23 @@ public class UserOrderController {
         User user = (User) request.getSession().getAttribute("user");
         //根据用户和传值的page进行查询用户的订单
         ApiMode apiMode;
-        List<OrderMaster> allOrder = orderMasterService.findAllOrder(user, page);
-        if (allOrder.size()==0){
+        IPage<OrderMaster> orderMasterIPage = orderMasterService.findAllOrder(user, page);
+        if (orderMasterIPage==null){
             apiMode = new ApiMode(ORDER_NULL_ERROR);
             return apiMode;
         }else {
          apiMode=new ApiMode();
-         Map<String,Object> map = new HashMap<>();
-         map.put("allOrder",allOrder);
-         apiMode.setDate(map);
-         return apiMode;
+            List<OrderMaster> allOrder = orderMasterIPage.getRecords();
+            long current = orderMasterIPage.getCurrent();
+            long total = orderMasterIPage.getTotal();
+            long pages = orderMasterIPage.getPages();
+            Map<String,Object> map = new HashMap<>();
+            map.put("allOrder",allOrder);
+            map.put("current",current);
+            map.put("total",total);
+            map.put("pages",pages);
+            apiMode.setDate(map);
+            return apiMode;
         }
     }
 
@@ -92,16 +103,18 @@ public class UserOrderController {
         if (StringUtils.isBlank(orderId)||user==null){
             return new ApiMode("订单编号或者操作的用户不能为空哦");
         }
-        ApiMode apiMode = orderMasterService.findOneOrder(orderId);
-       if (apiMode==null){
+        OrderMaster orderMaster = orderMasterService.findOneOrder(orderId);
+       if (orderMaster==null){
            return new ApiMode("未找到您要支付的订单");
        }
-        List<OrderDetail> orderDetailList = orderDetailService.findOneOrderMasterDetail(orderId);
-       if (orderDetailList==null){
+       List<OrderDetail> orderDetailList = orderDetailService.findOneOrderMasterDetail(orderId);
+       if (orderDetailList.size()==0){
            return new ApiMode("该订单没有任何的商品可以购买");
        }
-       Map<String,Object> map = apiMode.getDate();
-       map.put("orderDetailList",orderDetailList);
+       orderMaster.setOrderDetailList(orderDetailList);
+       ApiMode apiMode = new ApiMode();
+       Map<String,Object> map = new HashMap<>();
+       map.put("orderMaster",orderMaster);
        apiMode.setDate(map);
        return apiMode;
     }
@@ -120,11 +133,91 @@ public class UserOrderController {
         if (StringUtils.isBlank(orderId)||user==null){
             return new ApiMode("订单编号或者操作的用户不能为空哦");
         }
-        ApiMode apiMode = orderMasterService.cancelOrder(orderId, user);
-        if (apiMode==null){
+        if (!orderMasterService.cancelOrder(orderId, user)) {
             return new ApiMode("取消订单失败");
         }
+        return new ApiMode();
+    }
+
+    /**
+     * 创建订单
+     * @param request
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("/crateOrder")
+    public ApiMode crateOrder(HttpServletRequest request){
+       User user = (User) request.getSession().getAttribute("user");
+       if (user==null){
+           return new ApiMode("用户必须登录！，创建订单失败");
+       }
+        List<Address> addressList = addressService.findAddressByUserId(user.getUserId());
+        ApiMode apiMode = new ApiMode();
+        if (addressList.size()==0||addressList==null){
+            apiMode.setMessage("当前用户没有还没有地址哦，地址栏进行添加");
+            apiMode.setCode(2);//无地址
+        }
+        String userAddress="";
+       for (Address address:addressList){
+           if (address.getAddressType()==1){
+                userAddress = address.getAddress();
+                break;
+           }
+       }
+        if (userAddress.equals("")){
+            userAddress = "请添加收货地址";
+        }
+        OrderMaster orderMaster = orderMasterService.crateOrder(user, userAddress);
+        if (orderMaster==null){
+            return new ApiMode("订单模板创建失败");
+        }
+        //给订单添加详情
+        List<Car> carList = carService.findCarByUserId(user.getUserId());
+        if (carList.size()==0){
+            return new ApiMode("订单创建失败，购物车中并未添加商品");
+        }
+        BigDecimal orderTotal = new BigDecimal(0);
+        List<OrderDetail> orderDetailList = new ArrayList<>();
+        for (Car car :carList){
+            Product product = productService.findProductById(car.getPid(), car.getPNum());
+            OrderDetail orderDetail = orderDetailService.crateOrderDetail(product,car.getPNum(),user,orderMaster);
+            if (orderDetail==null){
+                return new ApiMode("订单详情创建失败啦");
+            }
+            orderDetailList.add(orderDetail);
+            orderTotal =  orderTotal.add(orderDetail.getProductTotal());
+            if (!carService.clearCar(product.getProductId(),user.getUserId())) {
+                return new ApiMode("创建订单时，删除购物车内容失败啦");
+            }
+        }
+        orderMaster.setOrderDetailList(orderDetailList);
+        orderMaster.setOrderTotal(orderTotal);
+        if (!orderMasterService.updateOrder(orderMaster)) {
+            return new ApiMode("订单创建失败");
+        }
+        Map<String,Object> map =new HashMap<>();
+        map.put("orderMaster",orderMaster);
+        apiMode.setDate(map);
         return apiMode;
     }
 
+    /**
+     * 查找用户的订单数量
+     * @param request
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("/findOrderCount")
+    public ApiMode findOrderCount(HttpServletRequest request){
+        User user = (User) request.getSession().getAttribute("user");
+        if (user==null){
+            return new ApiMode("用户只有登录才能查看订单数量");
+        }
+        int orderCount = orderMasterService.findOrderCountByUserId(user.getUserId());
+        Map<String,Object> map = new HashMap<>();
+        map.put("orderCount",orderCount);
+        ApiMode apiMode = new ApiMode();
+        apiMode.setDate(map);
+        return apiMode;
+    }
 }

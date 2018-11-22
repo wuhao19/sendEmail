@@ -1,5 +1,6 @@
 package com.wuhao.email.service.Impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wuhao.email.domain.LoginMode;
 import com.wuhao.email.domain.User;
@@ -279,6 +280,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 default:
                     user = null;
                     break;
+        }
+        return user;
+    }
+
+    @Override
+    public User findUserById(Integer userId) {
+        if (StringUtils.isBlank(String.valueOf(userId))){
+            return null;
+        }
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id", userId));
+        if (user==null){
+            return null;
         }
         return user;
     }

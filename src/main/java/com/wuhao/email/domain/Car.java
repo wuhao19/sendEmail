@@ -36,6 +36,11 @@ public class Car implements Serializable {
     private Integer uid;
 
     /**
+     * 购物车的状态 0未删除1已删除
+     */
+    private Integer carStatus;
+
+    /**
      * 商品id
      */
     private Integer pid;

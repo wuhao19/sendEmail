@@ -36,6 +36,15 @@ public class Address implements Serializable {
      * 用户地址
      */
     private String address;
+    /**
+     * 删除地址 0未删除1已删除 默认0
+     */
+    private Integer addressStatus;
+
+    /**
+     * 地址是否为默认 0是普通地址 1是默认地址 默认0
+     */
+    private Integer addressType;
 
     /**
      * 创建时间

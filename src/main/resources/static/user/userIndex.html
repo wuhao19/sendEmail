@@ -15,14 +15,11 @@
                 <div class="col-md-12 column">
                     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                            <div class="navbar-left" role="search">
-                                <a  class="btn btn-default" href="userCar.html">购物车（）</a>
-                            </div>
                             <div class="navbar-right">
                                 <div class="navbar-form" role="search" id="login">
 
                                 </div>
-                                <div id="carButton">
+                                <div class="navbar-form" role="search" id="buttonBox">
 
                                 </div>
                             </div>
@@ -43,6 +40,74 @@
     </div>
 </div>
 <script>
+    function findOrderCount() {
+        $.ajax({
+            url: '/user/order/findOrderCount',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {},
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    $("#orderCount").html(data.date.carCount);
+                }
+            },
+            error: function (xhr, textStatus) {
+            },
+            complete: function () {
+            }
+        });
+    }
+    function findCarCount() {
+        $.ajax({
+            url: '/user/car/findCarCount',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {},
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    $("#carCount").html(data.date.orderCount);
+                }
+            },
+            error: function (xhr, textStatus) {
+            },
+            complete: function () {
+            }
+        });
+
+    }
+    function checkUserLogin(){
+        $.ajax({
+            url: '/user/checkUserLogin',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {},
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                  showButtonBox(data.date.user);
+                  findCarCount();
+                  findOrderCount();
+                } else {
+                    showLogin();
+                }
+            },
+            error: function (xhr, textStatus) {
+            },
+            complete: function () {
+            }
+        });
+    }
     $(document).ready(function () {
         $.ajax({
             url: '/user/product/listAllProduct',
@@ -56,13 +121,7 @@
             success: function (data, textStatus, jqXHR) {
                 if (data.code == 0) {
                     showAllProduct(data.date.productList);
-                    var user=sessionStorage.getItem("user");
-                    if (user==null){
-                        showLogin();
-                    } else {
-                        showUserInfo(user);
-                    }
-
+                    checkUserLogin();
                 } else {
                     alert(data.message);
                 }
@@ -74,6 +133,15 @@
             }
         });
     })
+
+    function showButtonBox(user) {
+        str="";
+        str+=' <span style="margin-top: 10px">欢迎你：<span style="font-size: 15px;color: firebrick">'+user.userName+'</span></span>';
+        str+='  <button  class="btn btn-default" onclick="window.location.href=\'userCar.html\'">购物车(<span style="color:firebrick;" id="carCount">0</span>)</button> ';
+        str+=' <button  class="btn btn-default" onclick="window.location.href=\'userOrder1.html\'">订单中心(<span style="color:firebrick;" id="orderCount">0</span>)</button>';
+        str+=' <button  class="btn btn-default" onclick="window.location.href=\'userInfo.html\'">个人中心</button>';
+        $("#buttonBox").html(str);
+    }
     function showLogin() {
         str="";
         str+=' <div class="form-group">'
@@ -121,6 +189,7 @@
             success: function (data, textStatus, jqXHR) {
                if (data.code==0){
                    alert("添加购物车成功！");
+                   $("#carCount").html(data.date.carCount);
                } else {
                    alert(data.message);
                }
@@ -149,8 +218,7 @@
             success: function (data, textStatus, jqXHR) {
                 if (data.code==0){
                     alert("登录成功");
-                    showUserInfo(data.date.user);
-
+                    window.location.reload();
                 } else {
                     alert(data.message);
                 }
@@ -162,10 +230,6 @@
             }
         })
     }
-function showUserInfo(user) {
-    $("#login").replaceWith("<p>欢迎你："+data.date.user.userName+"! </p>")
-
-}
 </script>
 
 </body>

@@ -1,6 +1,7 @@
 package com.wuhao.email.controller;
 
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wuhao.email.domain.*;
 import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.service.*;
@@ -58,7 +59,16 @@ public class OrderMasterController {
     public String showOrder(HttpServletRequest request, Model model){
         User user = (User)request.getSession().getAttribute("user");
         List<Car> carList = carService.findCarByUserId(user.getUserId());
-        String userAddress = addressService.findAddressByUserId(user.getUserId());
+        List<Address> addressList = addressService.findAddressByUserId(user.getUserId());
+        if (addressList.size()==0||addressList==null){
+             return  null;
+        }
+        String userAddress="选择你的地址";
+        for (Address address:addressList){
+            if (address.getAddressType()==1){
+                userAddress=address.getAddress();
+            }
+        }
         OrderMaster orderMaster = orderService.crateOrder(user,userAddress);
         List<OrderDetail> orderDetailList = new ArrayList<>();
         BigDecimal orderTotal=new BigDecimal(0);
@@ -68,7 +78,7 @@ public class OrderMasterController {
             orderTotal= orderTotal.add(o.getProductTotal());
             orderDetailList.add(o);
             //清空购物车
-            if (!carService.clearCar(car)){
+            if (!carService.clearCar(1,1)){
                 throw new MyException(123,"购物车清空出现错误");
             }
         }
@@ -129,7 +139,8 @@ public class OrderMasterController {
         if (user==null){
             throw new MyException(123,"用户没有登录");
         }
-        List<OrderMaster> orderMasterList = orderService.findAllOrder(user, current);
+        IPage<OrderMaster> orderMasterIPage = orderService.findAllOrder(user, current);
+        List<OrderMaster> orderMasterList = orderMasterIPage.getRecords();
         if (orderMasterList.size()==0){
             throw new MyException(123,"当前用户没有下单");
         }

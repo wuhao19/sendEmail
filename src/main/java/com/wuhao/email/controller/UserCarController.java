@@ -58,6 +58,12 @@ public class UserCarController {
         apiMode.setDate(map);
         return apiMode;
     }
+
+    /**
+     * 显示用户的购物车数据
+     * @param request
+     * @return
+     */
     @ResponseBody
     @PostMapping("/showUserCar")
     public ApiMode showUserCar(HttpServletRequest request){
@@ -67,6 +73,9 @@ public class UserCarController {
         }
         //进行数据库该用户的购物车查询
         List<Car> carList = carService.findCarByUserId(user.getUserId());
+        if (carList.size()==0){
+            return new ApiMode("当前购物车内没有任何商品");
+        }
         List<CarVo> carVoList = new ArrayList<>();
         CarVo carVo;
         Product product=null;
@@ -78,6 +87,7 @@ public class UserCarController {
                 BeanUtils.copyProperties(product, carVo);
                 carVo.setProductNum(car.getPNum());
                 carVo.setProductPriceCount(product.getProductPrice().multiply(new BigDecimal(car.getPNum())));//设置商品总价
+                carVo.setId(car.getId());
                 carVoList.add(carVo);
             }
         }
@@ -89,4 +99,38 @@ public class UserCarController {
         return apiMode;
     }
 
+    /**
+     * 商品的移除操作
+     * @param productId
+     * @param request
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("/cancelCarProduct")
+    public ApiMode cancelCarProduct(@RequestParam(value = "productId") int productId,
+                                    HttpServletRequest request){
+        User user = (User) request.getSession().getAttribute("user");
+        if(StringUtils.isBlank(String.valueOf(productId))||user==null){
+            return new ApiMode("当前用户未登录，或者删除的商品编号不能为空");
+        }
+        if (!carService.clearCar(productId,user.getUserId())) {
+            return new ApiMode("商品移除失败啦");
+        }
+        return new ApiMode();
+    }
+
+    @ResponseBody
+    @PostMapping("/findCarCount")
+    public ApiMode findCarCount(HttpServletRequest request){
+        User user = (User) request.getSession().getAttribute("user");
+        if (user==null){
+            return new ApiMode("用户在登录后才能查看购物车数据");
+        }
+        Integer carCount = carService.findCarCount(user.getUserId());
+        Map<String,Object> map = new HashMap<>();
+        map.put("carCount",carCount);
+        ApiMode apiMode = new ApiMode();
+        apiMode.setDate(map);
+        return apiMode;
+    }
 }

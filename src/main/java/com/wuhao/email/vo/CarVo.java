@@ -7,6 +7,12 @@ import java.math.BigDecimal;
 @Data
 public class CarVo {
 
+
+    /**
+     * 购物车主键
+     */
+    private Integer id;
+
     private Integer productId;
 
     private Integer productNum;

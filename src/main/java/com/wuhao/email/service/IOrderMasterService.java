@@ -1,11 +1,10 @@
 package com.wuhao.email.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wuhao.email.domain.ApiMode;
 import com.wuhao.email.domain.OrderMaster;
 import com.wuhao.email.domain.User;
-
-import java.util.List;
 
 /**
  * <p>
@@ -20,9 +19,14 @@ public interface IOrderMasterService extends IService<OrderMaster> {
 
     ApiMode goPay(String orderId, int payType, User user);//支付服务
 
-    ApiMode cancelOrder(String orderId,User user);
+    boolean cancelOrder(String orderId,User user);
 
-    List<OrderMaster> findAllOrder(User user, int current);
+    IPage<OrderMaster> findAllOrder(User user, int current);
 
-    ApiMode findOneOrder(String orderId);
+    OrderMaster findOneOrder(String orderId);
+
+    boolean updateOrder(OrderMaster orderMaster);
+
+    int findOrderCountByUserId(int userId);
 }
+

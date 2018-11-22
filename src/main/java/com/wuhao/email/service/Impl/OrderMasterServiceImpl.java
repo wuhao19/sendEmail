@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wuhao.email.domain.ApiMode;
 import com.wuhao.email.domain.OrderMaster;
 import com.wuhao.email.domain.User;
-import com.wuhao.email.excptionHandler.MyException;
 import com.wuhao.email.mapper.OrderMasterMapper;
 import com.wuhao.email.service.IOrderMasterService;
 import com.wuhao.email.util.OrderUtils;
@@ -17,9 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -45,8 +41,7 @@ public class OrderMasterServiceImpl extends ServiceImpl<OrderMasterMapper, Order
      */
     @Override
     public OrderMaster crateOrder(User user, String userAddress) {
-
-        if (user==null|| StringUtils.isBlank(userAddress)){
+        if (user==null||StringUtils.isBlank(userAddress)){
             return null;
         }
         OrderMaster order=new OrderMaster();
@@ -63,7 +58,7 @@ public class OrderMasterServiceImpl extends ServiceImpl<OrderMasterMapper, Order
         order.setOrderTotal(new BigDecimal(0));
         int insert = orderMasterMapper.insert(order);
         if (insert==0){
-            throw new MyException(123,"订单插入数据库失败");
+            return null;
         }
         return order;
     }
@@ -130,25 +125,26 @@ public class OrderMasterServiceImpl extends ServiceImpl<OrderMasterMapper, Order
      * @return
      */
     @Override
-    public ApiMode cancelOrder(String orderId,User user) {
+    public boolean cancelOrder(String orderId,User user) {
         if (StringUtils.isBlank(orderId)||user==null){
-            return new ApiMode("用户或者订单号不能为空哦");//1
+            return false;
         }
-        ApiMode apiMode = findOneOrder(orderId);
-        if (apiMode.getCode()==1){
-            return apiMode;
+        OrderMaster orderMaster = orderMasterMapper.selectOne(new QueryWrapper<OrderMaster>().eq("id",orderId).eq("user_id",user.getUserId()));
+        if (orderMaster==null){
+           return false;
         }
-        Map<String, Object> date = apiMode.getDate();
-        OrderMaster orderMaster =(OrderMaster) date.get("orderMaster");
         orderMaster.setUpdatBy(user.getUserId());
+        if (orderMaster.getOrderStatus()==2){
+            return false;
+        }
         if (orderMaster.getPayStatus()==1){//已经支付
             if(orderMaster.getPayType()==0){//货到付款
-              return changeOrderStatus(orderMaster,2,orderId);
+              return   changeOrderStatus(orderMaster,2);
             }else {//在线支付
-                return changeOrderStatus(orderMaster,5,orderId);
+              return   changeOrderStatus(orderMaster,5);
             }
         }else {//未支付 直接修改为 取消状态
-         return   changeOrderStatus(orderMaster,2,orderId);
+          return   changeOrderStatus(orderMaster,2);
         }
     }
 
@@ -156,21 +152,15 @@ public class OrderMasterServiceImpl extends ServiceImpl<OrderMasterMapper, Order
      * 处理用户的订单状态
      * @param orderMaster
      * @param payTypeCode
-     * @param orderId
      * @return
      */
-    private ApiMode changeOrderStatus(OrderMaster orderMaster,int payTypeCode,String orderId){
+    private boolean changeOrderStatus(OrderMaster orderMaster,int payTypeCode){
        orderMaster.setOrderStatus(payTypeCode);
-       int result = orderMasterMapper.update(orderMaster, new QueryWrapper<OrderMaster>().eq("id", orderId));
+       int result = orderMasterMapper.update(orderMaster, new QueryWrapper<OrderMaster>().eq("id", orderMaster.getId()));
         if (result==0){
-            return new ApiMode("修改订单状态失败");
+            return false;
         }
-        Map<String,Object> map = new HashMap<>();
-        map.put("orderMaster",orderMaster);
-        ApiMode apiMode = new ApiMode();
-        apiMode.setDate(map);
-        apiMode.setMessage("您的退款请求已经处理啦，如果您已经付款，稍后我们的工作人员将联系你办理退款！");
-        return apiMode;
+        return true;
     }
 
     /**
@@ -180,14 +170,14 @@ public class OrderMasterServiceImpl extends ServiceImpl<OrderMasterMapper, Order
      * @return
      */
     @Override
-    public List<OrderMaster> findAllOrder(User user,int current) {
+    public IPage<OrderMaster> findAllOrder(User user, int current) {
         if (user==null){return null;}
         Page<OrderMaster> page = new Page<>(current,ORDER_PAGE_SIZE);
         IPage<OrderMaster> orderMasterIPage = orderMasterMapper.selectPage(page,new QueryWrapper<OrderMaster>().eq("user_id",user.getUserId()));
         if (orderMasterIPage==null){
             return null;
         }
-        return orderMasterIPage.getRecords();
+        return orderMasterIPage;
     }
 
     /**
@@ -196,19 +186,39 @@ public class OrderMasterServiceImpl extends ServiceImpl<OrderMasterMapper, Order
      * @return
      */
     @Override
-    public ApiMode findOneOrder(String orderId) {
+    public OrderMaster findOneOrder(String orderId) {
         if (StringUtils.isBlank(orderId)){
-            return new ApiMode("查询订单时订单编号不能为空哦");
+            return null;
         }
         OrderMaster orderMaster = orderMasterMapper.selectOne(new QueryWrapper<OrderMaster>().eq("id", orderId));
         if (orderMaster==null){
-            return  new ApiMode("系统中未查到你的订单哦");
+            return null;
         }
+        return orderMaster;
+    }
 
-        ApiMode apiMode = new ApiMode();
-        Map<String,Object> map = new HashMap<>();
-        map.put("orderMaster",orderMaster);
-        apiMode.setDate(map);
-        return apiMode;
+    /**
+     * 对订单进行更新
+     * @param orderMaster
+     * @return
+     */
+    @Override
+    public boolean updateOrder(OrderMaster orderMaster) {
+        if (orderMaster==null){
+            return false;
+        }
+        int result = orderMasterMapper.update(orderMaster, new QueryWrapper<OrderMaster>().eq("id", orderMaster.getId()));
+        if (result==0){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int findOrderCountByUserId(int userId) {
+        if (StringUtils.isBlank(String.valueOf(userId))){
+            return 0;
+        }
+        return orderMasterMapper.selectCount(new QueryWrapper<OrderMaster>().eq("user_id", userId));
     }
 }

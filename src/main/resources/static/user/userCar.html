@@ -11,7 +11,7 @@
 <div class="container">
     <div class="row clearfix">
         <div class="col-md-12 column" style="margin-top: 10px">
-            <h3 style="margin-right: auto"> <span/>购物车清单</h3>
+            <h3 style="margin-right: auto">购物车清单</h3>
             <div style="margin-top: 10px">
                 <ul class="list-inline" id="userInfo">
 
@@ -33,15 +33,46 @@
                 </tbody>
             </table>
             <hr style="color: grey">
-            <button class="btn bg-success" style="float: left" >继续购物</button>
-            <button class="btn bg-success" style="float: right" >去结算</button>
+            <button class="btn bg-success" style="float: left" onclick="window.location.href='userIndex.html'" >继续购物</button>
+            <button class="btn bg-success" style="float: right" onclick="goPay()" >去结算</button>
         </div>
     </div>
 </div>
 <script>
+    function goPay(){
+        $.ajax({
+            url: '/user/order/crateOrder',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {//传入需要结算的carId 默认结算所有商品
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                    alert("生成订单成功，即将前去支付")
+                    window.location.href="payOrder.html?orderId="+data.date.orderMaster.id+"";
+                } else if (data.code==2) {
+                    alert("当前用户还有地址，记得提交订单前先添加地址");
+                    window.location.href="payOrder.html?orderId="+data.date.orderMaster.id+"";
+                }else {
+                    alert(data.message);
+                }
+            },
+            error: function (xhr, textStatus, data) {
+            },
+            complete: function () {
+            }
+        })
+
+    }
+
+
     $(document).ready(function () {
         $.ajax({
-            url: '/car/showCar',
+            url: '/user/car/showUserCar',
             type: 'POST', //GET
             async: true,    //或false,是否异步
             data: {
@@ -64,6 +95,8 @@
             }
         })
     })
+
+
     function showUserInfo(user) {
         str="";
         str+='  <li>用户名：'+user.userName+'</li>';
@@ -78,10 +111,43 @@
             str+='<td >'+car.productPrice+'</td>';
             str+='<td >'+car.productNum+'</td>';
             str+=' <td >'+car.productPriceCount+'</td>';
-            str+=' <td><a>移除</a></td>';
+            str+=' <td><button class="btn bg-primary" onclick="decisionCancel('+car.productId+')" >移除</button></td>';
             str+='  </tr>';
         })
         $("#tBody").html(str);
+    }
+    function decisionCancel(productId){
+        var r=confirm("你确定要移除该商品嘛？");
+        if (r==true) {
+            cancelCarProduct(productId);
+        }
+    }
+
+    function cancelCarProduct(productId) {
+        $.ajax({
+            url: '/user/car/cancelCarProduct',
+            type: 'POST', //GET
+            async: true,    //或false,是否异步
+            data: {
+                productId: productId
+            },
+            timeout: 5000,    //超时时间
+            dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+            beforeSend: function (xhr) {
+            },
+            success: function (data, textStatus, jqXHR) {
+                if (data.code == 0) {
+                   alert("商品移除成功！");
+                   window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            },
+            error: function (xhr, textStatus, data) {
+            },
+            complete: function () {
+            }
+        })
     }
 </script>
 </body>

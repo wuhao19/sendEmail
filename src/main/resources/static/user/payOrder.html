@@ -12,8 +12,9 @@
 <div class="container">
     <div class="row clearfix">
         <div class="col-md-12 column" style="margin-top: 10px">
+            <button class="btn bg-primary" style="float: right" onclick="window.location.href='userIndex.html'">返回首页</button>
             <h3 style="margin-right: auto"><span/>确认订单</h3>
-            <div style="margin-top: 10px">
+            <div style="margin-top: 20px">
                 <ul class="list-inline" id="orderLi1">
 
                 </ul>
@@ -78,7 +79,7 @@
             success: function (data, textStatus, jqXHR) {
                 if (data.code == 0) {
                     showOrderLi(data.date.orderMaster);
-                    showOrderDetail(data.date.orderDetailList);
+                    showOrderDetail(data.date.orderMaster.orderDetailList);
                     showButtonBox(data.date.orderMaster.id)
                 } else {
                     alert(data.message);//跳转到错误界面

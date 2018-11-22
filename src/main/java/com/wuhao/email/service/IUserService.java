@@ -36,4 +36,6 @@ public interface IUserService extends IService<User> {
      * @return
      */
     boolean updateUserInfo(User user);
+
+    User findUserById(Integer userId);
 }

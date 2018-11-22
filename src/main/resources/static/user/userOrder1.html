@@ -12,7 +12,8 @@
     <div class="row clearfix">
         <div class="col-md-12 column">
             <div style="width: 100%;height: 50px">
-                <h3 style="float: left"><span/>用户订单查询</h3>
+                <h3 style="float: left">用户订单查询</h3>
+                <button class="btn bg-primary" style="float: right;margin-top: 15px " onclick="window.location.href='userIndex.html'">返回首页</button>
             </div>
             <div class="row clearfix" style="margin-top: 10px;margin-bottom: 0px">
                 <div class="col-md-12 column">
@@ -106,6 +107,7 @@
                         success:function(data,textStatus,jqXHR){
                             if (data.code==0){
                                 show(data.date.allOrder);
+                                showPage(data.date.current,data.date.total,data.date.pages);
                             }else {
                                 alert(data.message);//跳转到错误界面
                             }
@@ -116,6 +118,11 @@
                         }
                     })
                 })
+                function showOrderInfo(current,total,pages) {
+                    str="";
+                    str+=' <h5 style="margin-top: 20px;letter-spacing: 2px;color: black;" id="">消息统计: 合计查出订单<span>'+total+'</span>单;当前第<span>'+current+'</span>页;一共<span>'+pages+'</span>页</h5>';
+                    $("#orderInfo").html(str);
+                }
                 function show(allOrder) {
                     str="";
                     $.each(allOrder,function (index,order) {
@@ -140,12 +147,17 @@
                 function goPay(payStatus,orderStatus,orderId) {
                     if(payStatus==1){
                         if (orderStatus==1){
-                            return "<a href='payOrder.html?orderId="+orderId+"'>去退款</a>"
+                            return "<a href='payOrder.html?orderId="+orderId+"'>去取消</a>";
                         }else {
-                            return "--"
+                            return "--";
                         }
                     }else {
-                        return "<a href='payOrder.html?orderId="+orderId+"'>去支付</a>"
+                        if (orderStatus!=2){
+                            return "<a href='payOrder.html?orderId="+orderId+"'>去支付</a>";
+                        } else {
+                            return"--";
+                        }
+
                     }
                 }
                 function orderStatus(orderStatus) {
@@ -209,22 +221,64 @@
                     }
                 }
             </script>
-            <h5 style="margin-top: 20px;letter-spacing: 2px;color: black;" id="">消息统计: 合计查出订单<span>0</span>单;一共<span>0</span>页
-            </h5>
+            <div id="orderInfo">
+
+            </div>
+
         </div>
         <div class="col-md-12 column" style="margin: 10px auto;">
             <ul class="pagination" id="pagination">
-                <li><a style="color: black">首页</a></li>
-                <li><a href="#" style="color: black">上一页</a></li>
-                <li>
-                    <a href="#"><span>2</span></a></li>
-                <li><a href="#" style="color: black">下一页</a></li>
-                <li><a href="#" style="color: black">尾页</a></li>
+
             </ul>
             <script>
-                function goPage(page) {
-                    $("#page").val(page);
-                    $("#myForm").submit();
+                function showPage(current,total,pages) {
+                    showOrderInfo(current,total,pages);
+                    str = "<li><a style=\"color: black\" onclick='findOrderByPage(1)'>首页</a></li>";
+                    if (current!=1){
+                        str+='<li><a href="#" style="color: black" onclick="findOrderByPage('+(current-1)+')">上一页</a></li>';
+                    }
+                    if (pages>=2){
+                        for (var i=1;i<=pages;i++){
+                            str+='<li><a href="#" style="color: black" onclick="findOrderByPage('+i+')">'+i+'</a></li>';
+                        }
+                    } else {
+                        str+='<li><a href="#" style="color: black" onclick="findOrderByPage('+current+')">'+current+'</a></li>';
+                    }
+                    if (current!=pages){
+                        str+='<li><a href="#" style="color: black" onclick="findOrderByPage('+(current+1)+')">下一页</a></li>';
+                    }
+                    str+=' <li><a href="#" style="color: black" onclick="findOrderByPage('+pages+')">尾页</a></li>';
+
+                    $("#pagination").html(str);
+
+                }
+
+                function findOrderByPage(page) {
+                    $.ajax({
+                        url:'/user/order/showOrder',
+                        type:'POST', //GET
+                        async:true,    //或false,是否异步
+                        data:{
+                            page: page
+                        },
+                        timeout:5000,    //超时时间
+                        dataType:'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+                        beforeSend:function(xhr){
+
+                        },
+                        success:function(data,textStatus,jqXHR){
+                            if (data.code==0){
+                                show(data.date.allOrder);
+                                showPage(data.date.current,data.date.total,data.date.pages);
+                            }else {
+                                alert(data.message);//跳转到错误界面
+                            }
+                        },
+                        error:function(xhr,textStatus,data){
+                        },
+                        complete:function(){
+                        }
+                    })
                 }
             </script>
         </div>
