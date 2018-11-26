@@ -56,3 +56,5 @@ myConfig:
 
   MAX_LENGTH: 32
   MIN_LENGTH: 1
+server:
+  port: 8000
